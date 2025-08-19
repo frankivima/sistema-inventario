@@ -11,7 +11,7 @@ if ($varsesion == null || $varsesion == '') {
 
 $id = $_GET['id'];
 include "../db.php";
-$consulta = "SELECT * FROM departamentos WHERE id = $id";
+$consulta = "SELECT * FROM unidades WHERE id = $id";
 $resultado = mysqli_query($conexion, $consulta);
 $usuario = mysqli_fetch_assoc($resultado);
 
@@ -39,7 +39,7 @@ if (isset($_SESSION['user_id'])) {
 
             <div class="card-header py-3">
                 <div class="row">
-                    <h4 class="m-0 font-primary mayus bold col-8">Editar Departamento (Unidad de Trabajo)</h4>
+                    <h4 class="m-0 font-primary mayus bold col-8">Editar Unidad de Trabajo</h4>
                     <div class="col-4 text-right">
                     </div>
                 </div>
@@ -51,8 +51,8 @@ if (isset($_SESSION['user_id'])) {
 
                     <div class="form-row">
                         <div class="form-group col">
-                            <label for="nombre_departamento" class="form-label label-span left">Nombre del Departamento (Unidad de Trabajo):</label>
-                            <input type="text" id="nombre_departamento" name="nombre_departamento" class="form-control" value="<?php echo $usuario['nombre_departamento']; ?>" required>
+                            <label for="nombre_unidad" class="form-label label-span left">Nombre de la Unidad de Trabajo:</label>
+                            <input type="text" id="nombre_unidad" name="nombre_unidad" class="form-control" value="<?php echo $usuario['nombre_unidad']; ?>" required>
                         </div>
                     </div>
 
@@ -67,7 +67,7 @@ if (isset($_SESSION['user_id'])) {
                         </div>
                     </div>
 
-                    <input type="hidden" name="accion" value="editar_departamento">
+                    <input type="hidden" name="accion" value="editar_unidad">
                     <input type="hidden" name="id" value="<?php echo $usuario['id']; ?>">
 
                     <br>
@@ -76,7 +76,7 @@ if (isset($_SESSION['user_id'])) {
                         <div class="my-2 d-flex justify-content-center">
                             <button type="submit" id="form" name="form" class="btn btn-agg mr-2 mayus">
                                 <i class="fa-regular fa-floppy-disk"></i> Guardar Cambios</button>
-                            <a href="../../views/departamentos.php" class="btn btn-delete ml-2 mayus">
+                            <a href="../../views/unidades.php" class="btn btn-delete ml-2 mayus">
                                 <i class="fa-solid fa-x"></i> Cancelar
                             </a>
                         </div>

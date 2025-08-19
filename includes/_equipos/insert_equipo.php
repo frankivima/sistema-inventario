@@ -39,15 +39,15 @@ if (isset($_SESSION['user_id'])) {
                             <div class="form-row mb-0 mt-2">
 
                                 <div class="form-group col">
-                                    <label for="departamento" class="label-span mayus">Departamento: </label>
-                                    <select class="form-select" id="departamento" name="departamento" required>
-                                        <option value="">--Selecciona un departamento--</option>
+                                    <label for="unidad_id" class="label-span mayus">Unidad de Trabajo: </label>
+                                    <select class="form-select" id="unidad_id" name="unidad_id" required>
+                                        <option value="">--Selecciona la Unidad--</option>
                                         <?php
                                         include("../db.php");
-                                        $sql = "SELECT * FROM departamentos ORDER BY nombre_departamento ASC";
+                                        $sql = "SELECT * FROM unidades ORDER BY nombre_unidad ASC";
                                         $resultado = mysqli_query($conexion, $sql);
                                         while ($consulta = mysqli_fetch_array($resultado)) {
-                                            echo '<option value="' . $consulta['nombre_departamento'] . '">' . $consulta['nombre_departamento'] . '</option>';
+                                            echo '<option value="' . $consulta['id'] . '">' . $consulta['nombre_unidad'] . '</option>';
                                         }
                                         ?>
                                     </select>

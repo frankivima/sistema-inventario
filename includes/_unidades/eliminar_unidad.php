@@ -10,6 +10,6 @@ $varsesion = $_SESSION['username'];
 	}
 	$id = $_GET['id'];
 	include "../db.php";
-	$query = mysqli_query($conexion,"DELETE FROM departamentos WHERE id = '$id'");
+	$query = mysqli_query($conexion,"DELETE FROM unidades WHERE id = '$id'");
 	
-	header ('Location: ../../views/departamentos.php?m=1');
+	header ('Location: ../../views/unidades.php?m=1');

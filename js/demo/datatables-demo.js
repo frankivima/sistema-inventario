@@ -1,7 +1,8 @@
 $(document).ready(function() {
+  
   $('#dataTable').DataTable({
     order: [[0, 'asc']],
-    pageLength: 15,
+    pageLength: 20,
     lengthMenu: [5, 10, 15, 20],
     language: {
       processing:     "Tratamiento en curso...",

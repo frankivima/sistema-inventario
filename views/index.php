@@ -83,13 +83,13 @@ if (isset($_SESSION['nombre']) && isset($_SESSION['apellido'])) {
                         <div class="card-body">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
-                                    <a href="departamentos.php" class="text-xs font-card1 m-3">
-                                        Departamentos</a>
+                                    <a href="unidades.php" class="text-xs font-card1 m-3">
+                                        Unidades de Trabajo</a>
                                     <div class="h5 mx-3 font-h2">
                                         <?php
                                         include "../includes/db.php";
 
-                                        $SQL = "SELECT id FROM departamentos ORDER BY id";
+                                        $SQL = "SELECT id FROM unidades ORDER BY id";
                                         $dato = mysqli_query($conexion, $SQL);
                                         $fila = mysqli_num_rows($dato);
 

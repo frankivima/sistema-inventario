@@ -35,12 +35,12 @@ if (isset($_POST['accion'])) {
             editar_user();
             break;
 
-        case 'insert_departamento':
-            insert_departamento();
+        case 'insert_unidad':
+            insert_unidad();
             break;
 
-        case 'editar_departamento':
-            editar_departamento();
+        case 'editar_unidad':
+            editar_unidad();
             break;
 
         case 'insert_equipo':
@@ -197,13 +197,13 @@ function editar_user()
 
 
 
-function insert_departamento()
+function insert_unidad()
 {
     include "db.php";
     extract($_POST);
 
     // Verificar si la cédula ya existe en la tabla 'pacientes'
-    $consulta_verificar = "SELECT * FROM departamentos WHERE nombre_departamento = '$nombre_departamento'";
+    $consulta_verificar = "SELECT * FROM unidades WHERE nombre_unidad = '$nombre_unidad'";
     $resultado_verificar = mysqli_query($conexion, $consulta_verificar);
 
     if (mysqli_num_rows($resultado_verificar) > 0) {
@@ -212,17 +212,17 @@ function insert_departamento()
              Swal.fire({
                  icon: 'error',
                  title: 'Error',
-                 text: 'Este Departamento ya se encuentra registrado. No se puede realizar la inserción.',
+                 text: 'Esta Unidad de Trabajo ya se encuentra registrada. No se puede realizar la inserción.',
                  confirmButtonText: 'Aceptar',
                 confirmButtonColor: '#034D81',
              }).then(function() {
-                 location.assign('../views/departamentos.php');
+                 location.assign('../views/unidades.php');
              });
              </script>";
     } else {
-        // La cédula no existe, procede con la inserción
-        $consulta = "INSERT INTO departamentos (nombre_departamento, estado, fecha_registro, encargado_registro)
-                     VALUES ('$nombre_departamento', '$estado', '$fecha_registro', '$encargado_registro')";
+        
+        $consulta = "INSERT INTO unidades (nombre_unidad, estado, fecha_registro, encargado_registro)
+                     VALUES ('$nombre_unidad', '$estado', '$fecha_registro', '$encargado_registro')";
         $resultado = mysqli_query($conexion, $consulta);
 
         if ($resultado) {
@@ -235,7 +235,7 @@ function insert_departamento()
                      confirmButtonText: 'Aceptar',
                     confirmButtonColor: '#034D81',
                  }).then(function() {
-                     location.assign('../views/departamentos.php');
+                     location.assign('../views/unidades.php');
                  });
                  </script>";
         } else {
@@ -248,20 +248,20 @@ function insert_departamento()
                      confirmButtonText: 'Aceptar',
                     confirmButtonColor: '#034D81',
                  }).then(function() {
-                     location.assign('../views/departamentos.php');
+                     location.assign('../views/unidades.php');
                  });
                  </script>";
         }
     }
 }
 
-function editar_departamento()
+function editar_unidad()
 {
     include "db.php";
     extract($_POST);
 
     // Verificar si la cédula ya existe en la tabla 'pacientes'
-    $consulta_verificar = "SELECT * FROM departamentos WHERE nombre_departamento = '$nombre_departamento' AND id != $id";
+    $consulta_verificar = "SELECT * FROM unidades WHERE nombre_unidad = '$nombre_unidad' AND id != $id";
     $resultado_verificar = mysqli_query($conexion, $consulta_verificar);
 
     if (mysqli_num_rows($resultado_verificar) > 0) {
@@ -270,17 +270,17 @@ function editar_departamento()
              Swal.fire({
                  icon: 'error',
                  title: 'Error',
-                 text: 'Este Departamento ya se encuentra registrado. No se puede realizar la inserción.',
+                 text: 'Esta Unidad de Trabajo ya se encuentra registrada. No se puede realizar la inserción.',
                  confirmButtonText: 'Aceptar',
             confirmButtonColor: '#034D81',
              }).then(function() {
-                 location.assign('../views/departamentos.php');
+                 location.assign('../views/unidades.php');
              });
              </script>";
     } else {
 
         // Construye la consulta SQL
-        $consulta = "UPDATE departamentos SET nombre_departamento = '$nombre_departamento', estado = '$estado' WHERE id = '$id' ";
+        $consulta = "UPDATE unidades SET nombre_unidad = '$nombre_unidad', estado = '$estado' WHERE id = '$id' ";
 
         // Ejecuta la consulta SQL
         $resultado = mysqli_query($conexion, $consulta);
@@ -290,7 +290,7 @@ function editar_departamento()
             echo "<script>
                  Swal.fire({
                 title: 'Éxito',
-                text: 'El Departamento ($nombre_departamento) fue actualizado correctamente.',
+                text: 'La unidad de ($nombre_unidad) fue actualizada correctamente.',
                 icon: 'success',
                 closeOnClickOutside: false,
                 closeOnEsc: false,
@@ -299,11 +299,11 @@ function editar_departamento()
                 content: {
                     element: 'p',
                     attributes: {
-                        innerHTML: 'El Departamento ($nombre_departamento) fue actualizado correctamente.'
+                        innerHTML: 'La Unidad de ($nombre_unidad) fue actualizada correctamente.'
                     }
                 }
             }).then(function() {
-                location.assign('../views/departamentos.php');
+                location.assign('../views/unidades.php');
             });
         </script>";
         } else {
@@ -315,7 +315,7 @@ function editar_departamento()
                 confirmButtonText: 'Aceptar',
                 confirmButtonColor: '#034D81',
             }).then(function() {
-                location.assign('../views/departamentos.php');
+                location.assign('../views/unidades.php');
             });
         </script>";
         }

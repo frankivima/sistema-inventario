@@ -99,7 +99,7 @@ if ($actualsesion == null || $actualsesion == '') {
                     <div id="collapseUtilities" class="collapse" aria-labelledby="collapseUtilities" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Mostrar</h6>
-                            <a class="collapse-item" href="../views/departamentos.php">Departamentos</a>
+                            <a class="collapse-item" href="../views/unidades.php">Unidades</a>
                             <a class="collapse-item" href="../views/equipos.php">Equipos</a>
 
                         </div>

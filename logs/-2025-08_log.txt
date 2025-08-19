@@ -1,1 +1,3 @@
 Backup creado: C:\xampp\htdocs\sistema-inventario\backups\backup_bd_inventario__-2025-08_11-39.sql 
+[11:39:46,55] Commit hecho con mensaje: Backup y cambios - -2025-08_11-39 - Preuba de Bat automatico 
+[11:39:46,55] Push realizado 

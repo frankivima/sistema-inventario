@@ -1,7 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:: =========================
 :: Configuración básica
+:: =========================
 set PROYECTO_DIR=C:\xampp\htdocs\sistema-inventario
 set SCRIPTS_DIR=%PROYECTO_DIR%\scripts
 set BACKUP_DIR=%PROYECTO_DIR%\backups
@@ -13,25 +15,24 @@ set DB_PASS=
 :: Crear carpeta logs si no existe
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 
-:: Obtener fecha y hora para uso en mensajes y nombres de archivos
+:: =========================
+:: Fecha completa: día-mes-año
+:: =========================
 for /f "tokens=2-4 delims=/ " %%a in ('date /t') do (
   set day=%%a
   set month=%%b
   set year=%%c
 )
-for /f "tokens=1-2 delims=: " %%a in ('time /t') do (
-  set hour=%%a
-  set minute=%%b
-)
-set hour=%hour: =0%
-set TIMESTAMP=%year%-%month%-%day%_%hour%-%minute%
+set TIMESTAMP=%day%-%month%-%year%
+set LOG_FILE=%LOG_DIR%\log_%TIMESTAMP%.txt
 
-set LOG_FILE=%LOG_DIR%\%year%-%month%-%day%_log.txt
-
+:: =========================
+:: Menu principal
+:: =========================
 :menu
 cls
 echo ====================================
-echo   GESTOR DE PROYECTO - SISTEMA INVENTARIO
+echo   GESTOR DE PROYECTO - SISTEMA INVENTARIO v2.0
 echo ====================================
 echo.
 echo 1. Preparar entorno antes de programar
@@ -51,6 +52,10 @@ if "%option%"=="5" goto salir
 echo Opcion invalida.
 pause
 goto menu
+
+:: =========================
+:: Funciones auxiliares
+:: =========================
 
 :verificar_mysql
 echo Verificando que MySQL (XAMPP) este corriendo...
@@ -75,7 +80,6 @@ if "%usbDrive%"=="" (
   goto :eof
 )
 
-:: Agregar :\ al final y comprobar si existe la unidad
 set USB_PATH=%usbDrive%:\
 
 if not exist "%USB_PATH%" (
@@ -99,6 +103,9 @@ if defined USB_PATH (
 )
 goto :eof
 
+:: =========================
+:: Preparar entorno antes de programar
+:: =========================
 :antes
 cls
 echo ============================================
@@ -136,6 +143,9 @@ call :respaldar_usb
 pause
 goto menu
 
+:: =========================
+:: Guardar y subir cambios (v2.0)
+:: =========================
 :despues
 cls
 echo ============================================
@@ -144,9 +154,8 @@ echo ============================================
 call :verificar_mysql
 cd "%SCRIPTS_DIR%"
 
-:: Detectar branch actual
-set BRANCH_NAME=
-for /f "tokens=2" %%b in ('git rev-parse --abbrev-ref HEAD') do set BRANCH_NAME=%%b
+:: Fijar branch v2.0 para backup
+set BRANCH_NAME=v2.0
 set BACKUP_FILE=%BACKUP_DIR%\backup_%DB_NAME%_%BRANCH_NAME%_%TIMESTAMP%.sql
 
 :: Exportar base de datos
@@ -166,10 +175,9 @@ cd "%PROYECTO_DIR%"
 
 git add .
 
-:: Crear mensaje de commit con fecha/hora y comentario opcional
+:: Crear mensaje de commit con comentario manual al principio
 set /p comentario=Escribe comentario adicional para el commit (opcional):
-set commitMsg=Backup y cambios - %TIMESTAMP%
-if not "%comentario%"=="" set commitMsg=%commitMsg% - %comentario%
+set commitMsg=%comentario% - Backup y cambios v2.0 - %TIMESTAMP%
 
 :: Solo commit si hay cambios
 git diff --cached --quiet
@@ -177,7 +185,7 @@ if %errorlevel%==0 (
     echo No hay cambios para commit.
 ) else (
     git commit -m "%commitMsg%"
-    git push origin HEAD
+    git push origin v2.0
     echo [%time%] Commit hecho con mensaje: %commitMsg% >> "%LOG_FILE%"
     echo [%time%] Push realizado >> "%LOG_FILE%"
 )
@@ -190,6 +198,9 @@ echo === CAMBIOS Y BACKUP SUBIDOS ===
 pause
 goto menu
 
+:: =========================
+:: Exportar BD
+:: =========================
 :exportar
 cls
 echo ============================================
@@ -202,6 +213,9 @@ echo [%time%] Backup de base de datos creado >> "%LOG_FILE%"
 pause
 goto menu
 
+:: =========================
+:: Importar BD
+:: =========================
 :importar
 cls
 echo ============================================
@@ -214,6 +228,9 @@ echo [%time%] Base de datos restaurada >> "%LOG_FILE%"
 pause
 goto menu
 
+:: =========================
+:: Salir
+:: =========================
 :salir
 echo Script finalizado.
 pause

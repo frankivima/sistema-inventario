@@ -1,0 +1,1 @@
+Backup creado: C:\xampp\htdocs\sistema-inventario\backups\backup_bd_inventario_v2.0_08-2025-.sql 

@@ -2,7 +2,7 @@
 REM =========================
 REM Configuración
 REM =========================
-set REPO_PATH=C:\ruta\a\mi_proyecto
+set REPO_PATH=C:\xampp\htdocs\sistema-inventario
 set BACKUP_PATH=%REPO_PATH%\backups
 set DB_NAME=bd_inventario
 set DB_USER=root

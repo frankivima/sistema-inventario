@@ -1,287 +1,204 @@
 <?php
 session_start();
 error_reporting(0);
-$varsesion = $_SESSION['username'];
+include "../db.php";
 
+$varsesion = $_SESSION['username'];
 if ($varsesion == null || $varsesion == '') {
     header("Location: ../_sesion/login.php");
+    exit;
 }
 
-// Realizar la consulta para obtener el nombre y apellido del encargado
+$id = $_GET['id'] ?? 0;
+$query = "SELECT * FROM equipos WHERE id = $id LIMIT 1";
+
+/* $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+$query = "
+SELECT e.*, u.nombre AS nombre_unidad
+    FROM equipos e
+    LEFT JOIN unidades u ON e.unidad_id = u.id
+    WHERE e.id = $id
+    LIMIT 1
+";
+ */
+
+$resultado = mysqli_query($conexion, $query);
+$fila = mysqli_fetch_assoc($resultado);
+
+if (!$fila) {
+    echo "<p class='text-danger text-center py-5'>Equipo no encontrado</p>";
+    exit;
+}
+
+// Encargado de registro
 $idEncargado = $fila['encargado_registro'];
-$consultaEncargado = "SELECT nombre, apellido FROM usuarios WHERE id = $idEncargado";
-$resultadoEncargado = mysqli_query($conexion, $consultaEncargado);
+$resEnc = mysqli_query($conexion, "SELECT nombre, apellido FROM usuarios WHERE id = $idEncargado");
+$fEnc = $resEnc ? mysqli_fetch_assoc($resEnc) : null;
+$nombreEncargado = $fEnc['nombre'] ?? "No disponible";
+$apellidoEncargado = $fEnc['apellido'] ?? "";
 
-if ($resultadoEncargado) {
-    $filaEncargado = mysqli_fetch_assoc($resultadoEncargado);
-    $nombreEncargado = $filaEncargado['nombre'];
-    $apellidoEncargado = $filaEncargado['apellido'];
-} else {
-    // Manejar el caso de error si la consulta no se ejecuta correctamente
-    $nombreEncargado = "No disponible";
-    $apellidoEncargado = "";
-}
-
-// Realizar la consulta para obtener el nombre y apellido del encargado de modificación
-$idEncargadoModificacion = $fila['encargado_modificacion'];
-$consultaEncargadoModificacion = "SELECT nombre, apellido FROM usuarios WHERE id = $idEncargadoModificacion";
-$resultadoEncargadoModificacion = mysqli_query($conexion, $consultaEncargadoModificacion);
-
-if ($resultadoEncargadoModificacion) {
-    $filaEncargadoModificacion = mysqli_fetch_assoc($resultadoEncargadoModificacion);
-    $nombreEncargadoModificacion = $filaEncargadoModificacion['nombre'];
-    $apellidoEncargadoModificacion = $filaEncargadoModificacion['apellido'];
-} else {
-    // Manejar el caso de error si la consulta no se ejecuta correctamente
-    $nombreEncargadoModificacion = "No disponible";
-    $apellidoEncargadoModificacion = "";
-}
+// Encargado de modificación
+$idEncMod = $fila['encargado_modificacion'];
+$resEncMod = mysqli_query($conexion, "SELECT nombre, apellido FROM usuarios WHERE id = $idEncMod");
+$fEncMod = $resEncMod ? mysqli_fetch_assoc($resEncMod) : null;
+$nombreEncMod = $fEncMod['nombre'] ?? "No disponible";
+$apellidoEncMod = $fEncMod['apellido'] ?? "";
 
 ?>
 
 <style>
     .custom-badge {
-        font-size: 16px;
+        font-size: 14px;
+        padding: 0.35em 0.65em;
+    }
+
+    .card-section {
+        margin-bottom: 15px;
+    }
+
+    .card-section h6 {
+        font-size: 14px;
     }
 </style>
 
+<!-- Contenido Offcanvas -->
+<div class="container-fluid p-0">
 
+    <!-- Header con Logo -->
+    <div class="text-center mb-3">
+        <img src="../assets/img/logo1.png" alt="Logo" class="img-fluid mb-2" style="max-height: 60px;">
+        <h5 class="fw-bold text-primary">Detalles del Equipo Tecnológico</h5>
+    </div>
 
-<!-- Contenido del modal para ver la cita -->
-<div class="modal fade" id="verEquipoModal<?php echo $fila['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="verEquipoModalLabel<?php echo $fila['id']; ?>" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title bold mayus" id="verEquipoModalLabel<?php echo $fila['id']; ?>">Detalles de Equipos</h5>
-                <button type="button" class="btn btn-light" data-dismiss="modal">
-                    <i class="fa fa-times" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div class="modal-body" style="line-height: 1.0;">
-                <div class="row">
-                    <div class="card mb-1 px-5">
+    <?php
+    function mostrarInfo($valor, $campo = 'general')
+    {
+        $mensajes = [
+            'tipo_equipo' => 'No registrado',
+            'marca' => 'No registrada',
+            'modelo' => 'No registrado',
+            'serial' => 'No registrado',
+            'codigo_bienes' => 'No asignado',
+            'procesador' => 'No especificado',
+            'sistema_operativo' => 'No instalado',
+            'cant_memoria' => 'No registrada',
+            'almacenamiento' => 'No registrado',
+            'nombre_unidad' => 'Sin información',
+            'usuario_responsable' => 'Sin información',
+            'ubicacion' => 'No especificada',
+            'observaciones' => 'Sin observaciones',
+            'estado' => 'Sin información',
+            'general' => 'Sin información'
+        ];
 
-                        <div class="row g-0">
-                            <div class="col-lg-4 col-md-2 col-sm-0 mt-3">
-                                <img src="../assets/img/logo1.png" class="img-fluid rounded-start" alt="...">
-                            </div>
-                            <div class="col-lg-8 col-md-10 col-sm-12 text-left">
-                                <div class="card-body">
-                                    <h3 class="card-title font-dark bold mayus ">Detalles De Equipo Tecnológico</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        if (empty($valor)) {
+            return '<span class="badge bg-secondary text-white rounded">' . ($mensajes[$campo] ?? $mensajes['general']) . '</span>';
+        }
 
-                    <hr class="m-0">
+        return $valor;
+    }
+    ?>
 
-                    <div class="container mt-4">
+    <!-- Datos Generales -->
+    <div class="card card-section shadow-sm mb-3">
+        <div class="card-body">
+            <h6 class="text-primary mb-3"><i class="fa fa-info-circle"></i> Datos Generales</h6>
 
-                        <div class="row g-0 mx-5">
-                            <div class="col-md-12 text-justify font-dark">
+            <dl class="row mb-0">
+                <dt class="col-6 col-md-4">Unidad de Trabajo:</dt>
+                <dd class="col-6 col-md-8"><?= mostrarInfo($fila['nombre_unidad'], 'nombre_unidad'); ?></dd>
 
-                                <div class="row">
-                                    <div class="col-6">
-                                        <p><strong class="bold mayus">Nombre del Departamento:</strong></p>
-                                    </div>
-                                    <div class="col-6">
-                                        <p><?php echo $fila['departamento'] ?: 'N/T'; ?></p>
-                                    </div>
-                                </div>
+                <dt class="col-6 col-md-4">Usuario Responsable:</dt>
+                <dd class="col-6 col-md-8"><?= mostrarInfo($fila['usuario_responsable'], 'usuario_responsable'); ?></dd>
 
-                                <div class="row">
-                                    <div class="col 6">
-                                        <p><strong class="bold mayus">Usuario Responsable:</strong></p>
-                                    </div>
-                                    <div class="col-6">
-                                        <p><?php echo $fila['usuario_responsable'] ?: 'N/T'; ?></p>
-                                    </div>
-                                </div>
+                <dt class="col-6 col-md-4">Ubicación:</dt>
+                <dd class="col-6 col-md-8"><?= mostrarInfo($fila['ubicacion'], 'ubicacion'); ?></dd>
 
-                                <hr>
+                <dt class="col-6 col-md-4">Observaciones:</dt>
+                <dd class="col-6 col-md-8"><?= mostrarInfo($fila['observaciones'], 'observaciones'); ?></dd>
 
-                                <div class="row">
-                                    <div class="col 6">
-                                        <p><strong class="bold mayus">Tipo Equipo:</strong></p>
-                                    </div>
-                                    <div class="col-6">
-                                        <p><?php echo $fila['tipo_equipo'] ?: 'N/T'; ?></p>
-                                    </div>
-                                </div>
-
-                                <div id="campos-comuness">
-                                    <div class="row">
-                                        <div class="col 6">
-                                            <p><strong class="bold mayus">Marca:</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <p class="mayus"><?php echo $fila['marca'] ?: 'N/T'; ?></p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 6">
-                                            <p><strong class="bold mayus">Modelo:</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <p class="mayus"><?php echo $fila['modelo'] ?: 'N/T'; ?></p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 6">
-                                            <p><strong class="bold mayus">Serial:</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <p class="mayus"><?php echo $fila['serial'] ?: 'N/T'; ?></p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 6">
-                                            <p><strong class="bold mayus">Código de Bienes:</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <p class="mayus"><?php echo $fila['codigo_bienes'] ?: 'N/T'; ?></p>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                <div id="campos-especificoss" <?php if ($fila['tipo_equipo'] != 'Laptop' && $fila['tipo_equipo'] != 'CPU') echo 'style="display: none;"'; ?>>
-
-                                    <hr>
-
-                                    <div class="row">
-                                        <div class="col 6">
-                                            <p><strong class="bold mayus">Procesador:</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <p><?php echo $fila['procesador'] ?: 'N/T'; ?></p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 6">
-                                            <p><strong class="bold mayus">Sistema Operativo:</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <p><?php echo $fila['sistema_operativo'] ?: 'N/T'; ?></p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 6">
-                                            <p><strong class="bold mayus">Memoria RAM:</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <p><?php echo $fila['cant_memoria'] ?: 'N/T'; ?> GB <?php echo $fila['tipo_ram'] ?: 'N/T'; ?></p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col 6">
-                                            <p><strong class="bold mayus">Almacenamiento (Disco):</strong></p>
-                                        </div>
-                                        <div class="col-6">
-                                            <p><?php echo $fila['almacenamiento'] ?: 'N/T'; ?> GB. <?php echo $fila['tipo_disco'] ?: 'N/T'; ?></p>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-
-                                <div class="row">
-                                    <div class="col 6">
-                                        <p><strong class="bold mayus">Ubicación:</strong></p>
-                                    </div>
-                                    <div class="col-6">
-                                        <p><?php echo $fila['ubicacion'] ?: 'N/T'; ?></p>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col 6">
-                                        <p><strong class="bold mayus">Observaciones:</strong></p>
-                                    </div>
-                                    <div class="col-6">
-                                        <p><?php echo $fila['observaciones'] ?: 'N/T'; ?></p>
-                                    </div>
-                                </div>
-
-
-                                <div class="row">
-                                    <div class="col 6">
-                                        <p><strong class="bold mayus">Estado:</strong> </p>
-                                    </div>
-                                    <div class="col 6">
-                                        <span class="badge <?php
-                                                            $estado = strtolower($fila['estado']);
-                                                            switch ($estado) {
-                                                                case 'activo':
-                                                                    echo 'bg-verde text-white';
-                                                                    break;
-                                                                default:
-                                                                    echo 'bg-secondary text-white';
-                                                                    break;
-                                                            }
-                                                            ?> rounded custom-badge">
-                                            <?php echo $fila['estado']; ?>
-                                        </span>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <hr>
-                        <br>
-
-                        <div class="card mb-3 mx-3">
-                            <div class="row g-0">
-                                <div class="col-md-12 text-left font-dark">
-                                    <div class="card-body">
-
-                                        <div class="row">
-
-                                            <div class="col-6">
-                                                <p class="card-text font-dark bold mayus" style="font-size: 13px; line-height: 0.5;">
-                                                    Fecha de registro: <?php echo date('d-m-Y h:i A', strtotime($fila['fecha_registro'])); ?>
-                                                </p>
-                                                <p class="card-text font-dark bold mayus" style="font-size: 13px; line-height: 0.5;">
-                                                    Encargado de registro: <?php echo $nombreEncargado . ' ' . $apellidoEncargado; ?>
-                                                </p>
-                                            </div>
-
-
-                                            <div class="col-6">
-                                                <?php if ($idModificacion !== 0 && !empty($fila['fecha_ultima_modificacion']) && !empty($nombreEncargadoModificacion) && !empty($apellidoEncargadoModificacion)) : ?>
-                                                    <p class="card-text font-dark bold mayus" style="font-size: 13px; line-height: 0.5;">
-                                                        Ultima Modificación: <?php echo date('d-m-Y h:i A', strtotime($fila['fecha_ultima_modificacion'])); ?>
-                                                    </p>
-                                                    <p class="card-text font-dark bold mayus" style="font-size: 13px; line-height: 0.5;">
-                                                        Encargado de modificación: <?php echo $nombreEncargadoModificacion . ' ' . $apellidoEncargadoModificacion; ?>
-                                                    </p>
-                                                <?php else : ?>
-                                                    <p class="card-text font-dark bold mayus" style="font-size: 13px;">
-                                                        No ha sido modificado.
-                                                    </p>
-                                                <?php endif; ?>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-delete mayus" s data-dismiss="modal">Cerrar</button>
-            </div>
-
-
-
+                <dt class="col-6 col-md-4">Estado:</dt>
+                <dd class="col-6 col-md-8">
+                    <?php
+                    $estado = strtolower($fila['estado']);
+                    $badgeClass = ($estado == 'activo') ? 'bg-verde text-white' : 'bg-secondary text-white';
+                    ?>
+                    <span class="badge <?= $badgeClass ?> rounded custom-badge">
+                        <?= mostrarInfo($fila['estado'], 'estado'); ?>
+                    </span>
+                </dd>
+            </dl>
         </div>
     </div>
+
+    <!-- Especificaciones Técnicas -->
+    <div class="card card-section shadow-sm mb-3">
+        <div class="card-body">
+            <h6 class="text-primary mb-3"><i class="fa fa-cogs"></i> Especificaciones Técnicas</h6>
+
+            <dl class="row mb-0">
+                <?php
+                $campos = [
+                    'Tipo' => 'tipo_equipo',
+                    'Marca' => 'marca',
+                    'Modelo' => 'modelo',
+                    'Serial' => 'serial',
+                    'Código de Bienes' => 'codigo_bienes'
+                ];
+
+                foreach ($campos as $label => $campo): ?>
+                    <dt class="col-6 col-md-4"><?= $label ?>:</dt>
+                    <dd class="col-6 col-md-8"><?= mostrarInfo($fila[$campo], $campo); ?></dd>
+                <?php endforeach; ?>
+
+                <?php if (in_array($fila['tipo_equipo'], ['Laptop', 'CPU'])): ?>
+                    <hr>
+                    <?php
+                    $tecnicos = [
+                        'Procesador' => 'procesador',
+                        'Sistema Operativo' => 'sistema_operativo',
+                        'Memoria RAM' => 'cant_memoria',
+                        'Almacenamiento' => 'almacenamiento'
+                    ];
+
+                    foreach ($tecnicos as $label => $campo):
+                        $valor = $fila[$campo] ?: '';
+                        if ($campo == 'cant_memoria' && !empty($valor)) $valor .= ' GB ' . ($fila['tipo_ram'] ?: '');
+                        if ($campo == 'almacenamiento' && !empty($valor)) $valor .= ' GB ' . ($fila['tipo_disco'] ?: '');
+                    ?>
+                        <dt class="col-6 col-md-4"><?= $label ?>:</dt>
+                        <dd class="col-6 col-md-8"><?= mostrarInfo($valor, $campo); ?></dd>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </dl>
+        </div>
+    </div>
+
+
+
+    <!-- Registro y Modificación Compacto -->
+    <div class="card card-section shadow-sm">
+        <div class="card-body">
+            <h6 class="text-primary mb-3"><i class="fa fa-user-edit"></i> Registro y Modificación</h6>
+
+            <dl class="row mb-0">
+                <dt class="col-12 col-md-3">Registro:</dt>
+                <dd class="col-12 col-md-9">
+                    <?php echo $nombreEncargado . ' ' . $apellidoEncargado; ?> (<?php echo date('d-m-Y h:i A', strtotime($fila['fecha_registro'])); ?>)
+                </dd>
+
+                <dt class="col-12 col-md-3">Última Modificación:</dt>
+                <dd class="col-12 col-md-9">
+                    <?php if (!empty($fila['fecha_ultima_modificacion']) && $fila['fecha_ultima_modificacion'] != '0000-00-00 00:00:00'): ?>
+                        <?php echo !empty($nombreEncMod) ? $nombreEncMod . ' ' . $apellidoEncMod : "-"; ?> (<?php echo date('d-m-Y h:i A', strtotime($fila['fecha_ultima_modificacion'])); ?>)
+                    <?php else: ?>
+                        <span class="badge bg-secondary text-white">No ha sido modificado</span>
+                    <?php endif; ?>
+                </dd>
+            </dl>
+        </div>
+    </div>
+
 
 </div>

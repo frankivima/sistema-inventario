@@ -152,12 +152,85 @@ if ($varsesion == null || $varsesion = '') {
                                 <?php if ($_SESSION['rol'] == 1) { ?>
                                     <th class="text-center">Acciones</th>
                                 <?php } ?>
+
+
                             </tr>
                         </thead>
+
                     </table>
+
+                    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasEquipo" aria-labelledby="offcanvasEquipoLabel">
+                        <div class="offcanvas-header">
+                            <h5 class="offcanvas-title" id="offcanvasEquipoLabel">Detalles del Equipo</h5>
+                            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="offcanvas-body">
+                            <div id="offcanvas-content">
+                                <div class="text-center py-5">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <style>
+                        /* Responsive width */
+                        #offcanvasEquipo {
+                            width: 40%;
+                        }
+
+                        @media (max-width: 992px) {
+                            #offcanvasEquipo {
+                                width: 60%;
+                            }
+                        }
+
+                        @media (max-width: 768px) {
+                            #offcanvasEquipo {
+                                width: 100%;
+                            }
+                        }
+
+                        /* Scroll interno */
+                        #offcanvasEquipo .offcanvas-body {
+                            overflow-y: auto;
+                            max-height: 100vh;
+                            padding: 1rem;
+                        }
+                    </style>
+
+
+                    <script>
+                        $(document).on("click", ".btn-ver", function() {
+                            let id = $(this).data("id");
+
+                            $("#offcanvas-content").html("<div class='text-center py-5'>Cargando...</div>");
+                            var offcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasEquipo'));
+                            offcanvas.show();
+
+                            $.ajax({
+                                url: "../includes/_equipos/ver_equipo.php",
+                                type: "GET",
+                                data: {
+                                    id: id
+                                },
+                                success: function(response) {
+                                    $("#offcanvas-content").html(response);
+                                },
+                                error: function() {
+                                    $("#offcanvas-content").html("<p class='text-danger text-center py-5'>Error al cargar los datos.</p>");
+                                }
+                            });
+                        });
+                    </script>
+
+
                 </div>
             </div>
 
+            <script>
+                $(document).on("click", "#btn-generar-reporte", function() {
+                    window.open("../includes/_reportes/Inventario_Equipos.php");
+                });
+            </script>
 
             <script>
                 $(document).ready(function() {
@@ -243,14 +316,9 @@ if ($varsesion == null || $varsesion = '') {
 
 
             <script>
-                $(document).on("click", "#btn-generar-reporte", function() {
-                    window.open("../includes/_reportes/Inventario_Equipos.php");
-                });
-            </script>
+                $(document).on('click', '.btn-del', async function(e) {
 
 
-            <script>
-                $('.btn-del').on('click', async function(e) {
                     e.preventDefault();
 
                     const href = $(this).attr('href');
@@ -288,8 +356,6 @@ if ($varsesion == null || $varsesion = '') {
 
 
         </div>
-    </div>
-    </div>
 
     </div>
     <!-- /.container-fluid -->

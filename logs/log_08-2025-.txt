@@ -1,1 +1,5 @@
 Backup creado: C:\xampp\htdocs\sistema-inventario\backups\backup_bd_inventario_v2.0_08-2025-.sql 
+[11:56:23,27] Commit hecho con mensaje: Prueba del Bat automatico 2 - Backup y cambios v2.0 - 08-2025- 
+[11:56:23,27] Push realizado 
+[15:31:54,30] ERROR: MySQL no activo 
+Backup creado: C:\xampp\htdocs\sistema-inventario\backups\backup_bd_inventario_v2.0_08-2025-.sql 

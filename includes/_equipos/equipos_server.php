@@ -110,10 +110,24 @@ while ($row = mysqli_fetch_assoc($result)) {
     $acciones = '';
     if ($_SESSION['rol'] == 1) {
         $acciones = '
-            <button class="btn btn-infor btn-sm"><i class="fa fa-eye"></i></button>
-            <a href="editar_equipo.php?id='.$row['id'].'" class="btn btn-edit btn-sm"><i class="fa fa-edit"></i></a>
-            <a href="eliminar_equipo.php?id='.$row['id'].'" class="btn btn-del btn-delete btn-sm"><i class="fa fa-trash"></i></a>
+           <button type="button" class="btn btn-infor btn-sm btn-ver" 
+                    title="Ver Registro" 
+                    data-id="'.$row["id"].'">
+                <i class="fa fa-eye"></i>
+            </button>
+
+            <a href="../includes/_equipos/editar_equipo.php?id='.$row['id'].'" class="btn btn-edit btn-sm" title="Editar Registro">
+                <i class="fa fa-edit "></i>
+            </a>
+            
+            <a href="../includes/_equipos/eliminar_equipo.php?id='.$row['id'].'" 
+            data-nombre="'. $row['tipo_equipo'].'" 
+            data-apellido="'.$row['nombre_unidad'].'" 
+            class="btn btn-delete btn-del btn-sm" title="Eliminar Registro">
+                <i class="fa fa-trash "></i>
+             </a>
         ';
+
     }
     $row['acciones'] = $acciones;
 
@@ -126,4 +140,3 @@ echo json_encode($output);
 if (json_last_error() !== JSON_ERROR_NONE) {
     echo 'Error en la codificación JSON: ' . json_last_error_msg();
 }
-?>

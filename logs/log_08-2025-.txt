@@ -3,3 +3,5 @@ Backup creado: C:\xampp\htdocs\sistema-inventario\backups\backup_bd_inventario_v
 [11:56:23,27] Push realizado 
 [15:31:54,30] ERROR: MySQL no activo 
 Backup creado: C:\xampp\htdocs\sistema-inventario\backups\backup_bd_inventario_v2.0_08-2025-.sql 
+[15:33:07,59] Commit hecho con mensaje: Mejorado la implementacion de Side server, y mejora visual en vista de detalles de equipos - Backup y cambios v2.0 - 08-2025- 
+[15:33:07,59] Push realizado 

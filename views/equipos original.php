@@ -141,7 +141,7 @@ if ($varsesion == null || $varsesion = '') {
             <style>
                 #dataTableEquipos tbody td {
                     vertical-align: middle;
-                    padding: 8px 0px;
+                    padding: 8px 12px;
                 }
 
                 #dataTableEquipos thead {
@@ -161,8 +161,10 @@ if ($varsesion == null || $varsesion = '') {
                         <thead class="table table-comp">
                             <tr class="mayus">
                                 <th>Cod Bienes</th>
+                                <th>Unidad</th>
                                 <th>Responsable</th>
-                                <th>Equipo</th>
+                                <th class="text-center">Tipo de Equipo</th>
+                                <th class="text-center">Estado</th>
                                 <?php if ($_SESSION['rol'] == 1) { ?>
                                     <th class="text-center">Acciones</th>
                                 <?php } ?>
@@ -306,28 +308,18 @@ if ($varsesion == null || $varsesion = '') {
                                 "className": "fw-bold"
                             },
                             {
-                                // columna "Responsable" que junta usuario_responsable + unidad
-                                "data": null,
-                                "render": function(data, type, row) {
-                                    return `
-                                            <div>
-                                                <strong>${row.nombre_unidad}</strong><br>
-                                                <small class="text-muted">${row.usuario_responsable}</small>
-                                            </div>
-                                         `;
-                                }
+                                "data": "nombre_unidad"
                             },
-                             {
-                                // columna "Equipo"
-                                "data": null,
-                                "render": function(data, type, row) {
-                                    return `
-                                            <div>
-                                                <strong class="mayus">${row.tipo_equipo} ${row.marca} ${row.modelo}</strong><br>
-                                                <small class="text-muted">${row.estado}</small>
-                                            </div>
-                                         `;
-                                }
+                            {
+                                "data": "usuario_responsable"
+                            },
+                            {
+                                "data": "tipo_equipo",
+                                "className": "text-center"
+                            },
+                            {
+                                "data": "estado",
+                                "className": "text-center"
                             },
                             {
                                 "data": "acciones",

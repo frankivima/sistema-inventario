@@ -57,7 +57,7 @@ if (isset($_SESSION['user_id'])) {
                             <h5 class="mb-1 font-delete mayus" style="font-size: 12pt;"><?php echo $fila['unidad_trabajo'] . ' - ' . $fecha_revision_formateada;  ?></h5>
 
                             <p><?php echo $fila['descripcion_equipo'] ?: 'N/T';  ?> </p>
- 
+
                         </div>
                         <div class="btn-group">
                             <button class="btn btn-infor btn-sm" title="VER ACTA DE REVISIÓN" onclick="window.open('../includes/_acta_revision/Acta de Revision.php?id_acta=<?php echo $fila['id_acta']; ?>')"><i class="fa-solid fa-print"></i></button>

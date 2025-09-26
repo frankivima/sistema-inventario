@@ -11,19 +11,26 @@ if ($varsesion == null || $varsesion == '') {
 
 $id = $_GET['id'] ?? 0;
 $id = intval($id); // siempre conviene sanear
-$query = "SELECT e.*, u.nombre_unidad 
-          FROM equipos e
-          LEFT JOIN unidades u ON e.unidad_id = u.id
-          WHERE e.id = $id
-          LIMIT 1";
+
+$query = "
+    SELECT e.*, 
+           u.nombre_unidad,
+           ur.nombre AS res_nombre,
+           ur.apellido AS res_apellido
+    FROM equipos e
+    LEFT JOIN unidades u ON e.unidad_id = u.id
+    LEFT JOIN usuarios_responsables ur ON e.usuarioRes_id = ur.id
+    WHERE e.id = $id
+    LIMIT 1
+";
 $resultado = mysqli_query($conexion, $query);
 $fila = mysqli_fetch_assoc($resultado);
-
 
 if (!$fila) {
     echo "<p class='text-danger text-center py-5'>Equipo no encontrado</p>";
     exit;
 }
+
 
 // Obtener actas de revisión de este equipo
 $actasQuery = "SELECT * 
@@ -31,6 +38,19 @@ $actasQuery = "SELECT *
                WHERE equipo_id = {$fila['id']}
                ORDER BY fecha_revision ASC";
 $actasResult = mysqli_query($conexion, $actasQuery);
+
+
+// Obtener historial de cambios del equipo
+$historialQuery = "
+    SELECT hc.*, u.nombre, u.apellido
+    FROM historial_cambios hc
+    LEFT JOIN usuarios u ON hc.usuario_id = u.id
+    WHERE hc.equipo_id = {$fila['id']}
+    ORDER BY hc.fecha DESC
+";
+$historialResult = mysqli_query($conexion, $historialQuery);
+
+
 
 // Encargado de registro
 $idEncargado = $fila['encargado_registro'];
@@ -60,6 +80,26 @@ $apellidoEncMod = $fEncMod['apellido'] ?? "";
 
     .card-section h6 {
         font-size: 14px;
+    }
+
+    .timeline li {
+        position: relative;
+        padding-left: 25px;
+    }
+
+    .timeline li::before {
+        content: "";
+        position: absolute;
+        left: 8px;
+        top: 0;
+        width: 6px;
+        height: 100%;
+        background-color: #dee2e6;
+        border-radius: 3px;
+    }
+
+    .timeline li:last-child::before {
+        height: 10px;
     }
 </style>
 
@@ -111,7 +151,15 @@ $apellidoEncMod = $fEncMod['apellido'] ?? "";
                 <dd class="col-6 col-md-8"><?= mostrarInfo($fila['nombre_unidad'], 'nombre_unidad'); ?></dd>
 
                 <dt class="col-6 col-md-4">Usuario Responsable:</dt>
-                <dd class="col-6 col-md-8"><?= mostrarInfo($fila['usuario_responsable'], 'usuario_responsable'); ?></dd>
+                <dd class="col-6 col-md-8">
+                    <?= mostrarInfo(
+                        !empty($fila['res_nombre']) || !empty($fila['res_apellido'])
+                            ? trim($fila['res_nombre'] . ' ' . $fila['res_apellido'])
+                            : null,
+                        'usuario_responsable'
+                    ); ?>
+                </dd>
+
 
                 <dt class="col-6 col-md-4">Ubicación:</dt>
                 <dd class="col-6 col-md-8"><?= mostrarInfo($fila['ubicacion'], 'ubicacion'); ?></dd>
@@ -122,16 +170,67 @@ $apellidoEncMod = $fEncMod['apellido'] ?? "";
                 <dt class="col-6 col-md-4">Estado:</dt>
                 <dd class="col-6 col-md-8">
                     <?php
-                    $estado = strtolower($fila['estado']);
-                    $badgeClass = ($estado == 'activo') ? 'bg-verde text-white' : 'bg-secondary text-white';
+                    $estado = $fila['estado']; // Mantener mayúsculas/minúsculas como viene
+                    $estados = [
+                        "Operativo" => "bg-verde text-white",
+                        "En préstamo" => "bg-warning text-dark",
+                        "Pendiente de revisión" => "bg-info text-dark",
+                        "En reparación" => "bg-info text-dark",
+                        "Dañado" => "bg-danger text-white",
+                        "De baja" => "bg-secondary text-white",
+                        "Disponible" => "bg-primary text-white",
+                        "Inactivo" => "bg-dark text-white"
+                    ];
+
+                    $badgeClass = $estados[$estado] ?? 'bg-secondary text-white';
                     ?>
                     <span class="badge <?= $badgeClass ?> rounded custom-badge">
-                        <?= mostrarInfo($fila['estado'], 'estado'); ?>
+                        <?= mostrarInfo($estado, 'estado'); ?>
                     </span>
                 </dd>
+
+                <!-- Campos adicionales si el equipo está en préstamo -->
+                <?php if ($estado === 'En préstamo'): ?>
+                    <?php
+                    // Obtener nombre de la unidad de destino
+                    $prestamoUnidad = 'Sin información';
+                    if (!empty($fila['prestamo_unidad'])) {
+                        $resUnidad = mysqli_query($conexion, "SELECT nombre_unidad FROM unidades WHERE id={$fila['prestamo_unidad']}");
+                        $filaUnidad = $resUnidad ? mysqli_fetch_assoc($resUnidad) : null;
+                        $prestamoUnidad = $filaUnidad['nombre_unidad'] ?? 'Sin información';
+                    }
+
+                    // Obtener nombre del usuario responsable de destino
+                    $prestamoUsuario = 'Sin información';
+                    if (!empty($fila['prestamo_usuario'])) {
+                        $resUsuario = mysqli_query($conexion, "SELECT nombre, apellido FROM usuarios_responsables WHERE id={$fila['prestamo_usuario']}");
+                        $filaUsuario = $resUsuario ? mysqli_fetch_assoc($resUsuario) : null;
+                        $prestamoUsuario = trim(($filaUsuario['nombre'] ?? '') . ' ' . ($filaUsuario['apellido'] ?? '')) ?: 'Sin información';
+                    }
+                    ?>
+
+                    <div class="mb-2 p-3 border rounded bg-light shadow-sm d-inline-block w-100">
+                        <h6 class="mb-2"><i class="fa fa-exchange-alt text-warning"></i> Equipo en Préstamo</h6>
+                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                            <div>
+                                <small class="text-muted">Unidad Destino:</small>
+                                <span class="fw-bold"><?= $prestamoUnidad ?></span>
+                            </div>
+                            <div>
+                                <small class="text-muted">Usuario Responsable:</small>
+                                <span class="fw-bold"><?= $prestamoUsuario ?></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                <?php endif; ?>
+
+
             </dl>
         </div>
     </div>
+
 
     <!-- Especificaciones Técnicas -->
     <div class="card card-section shadow-sm mb-3">
@@ -177,62 +276,95 @@ $apellidoEncMod = $fEncMod['apellido'] ?? "";
     </div>
 
 
-    <!-- Actas de Revisión - Vista Documentos -->
+    <!-- Actas de Revisión - Vista Documentos - Colapsable -->
     <div class="card card-section shadow-sm mb-3">
-        <div class="card-body">
-            <h6 class="font-primary mb-3"><i class="fa fa-file-alt"></i> Actas de Revisión</h6>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="font-primary mb-0"><i class="fa fa-file-alt"></i> Actas de Revisión</h6>
+            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#actasCollapse" aria-expanded="false" aria-controls="actasCollapse">
+                <i class="fa fa-chevron-down"></i>
+            </button>
+        </div>
 
-            <?php if ($actasResult && mysqli_num_rows($actasResult) > 0): ?>
-                <div class="row g-3">
-                    <?php while ($acta = mysqli_fetch_assoc($actasResult)): ?>
-                        <div class="col-12 col-md-6 col-lg-4">
-                            <div class="card h-100 bor-primary">
-                                <div class="card-body d-flex flex-column justify-content-between">
-                                    <div>
-                                        <i class="fa fa-file-pdf fa-2x text-danger mb-2"></i>
-                                        <h6 class="bold mayus">Acta: #<?= $acta['id_acta'] ?></h6>
-                                        <p class="mb-1"><strong>Fecha:</strong> <?= date('d-m-Y', strtotime($acta['fecha_revision'])) ?></p>
-                                        <p class="mb-0"><strong>Descripción:</strong> </p>
-
-                                        <?php
-                                        $resultadoLinea = strtok($acta['resultado_revision'], "\n");
-                                        $conclusionLinea = strtok($acta['conclusion_revision'], "\n");
-
-                                        if (strlen($resultadoLinea) > 80) {
-                                            $resultadoLinea = substr($resultadoLinea, 0, 80) . '...';
-                                        }
-                                        if (strlen($conclusionLinea) > 80) {
-                                            $conclusionLinea = substr($conclusionLinea, 0, 80) . '...';
-                                        }
-                                        ?>
-                                        <p class="text-muted small mb-1">
-                                            <i class="fa fa-stethoscope"></i> <?= htmlspecialchars($resultadoLinea) ?>
-                                        </p>
-                                        <p class="text-muted small mb-0">
-                                            <i class="fa fa-lightbulb"></i> <?= htmlspecialchars($conclusionLinea) ?>
-                                        </p>
-
-                                    </div>
-                                    <div class="mt-2">
-                                        <button class="btn btn-infor btn-sm" 
-                                                title="VER ACTA DE REVISIÓN" 
-                                                onclick="window.open('../includes/_acta_revision/Acta de Revision.php?id_acta=<?php echo $acta['id_acta']; ?>')">
-                                                <i class="fa fa-eye"></i> Ver PDF
-                                        </button>
+        <div class="collapse" id="actasCollapse">
+            <div class="card-body">
+                <?php if ($actasResult && mysqli_num_rows($actasResult) > 0): ?>
+                    <div class="row g-3"> <?php while ($acta = mysqli_fetch_assoc($actasResult)): ?> <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card h-100 bor-primary">
+                                    <div class="card-body d-flex flex-column justify-content-between">
+                                        <div> <i class="fa fa-file-pdf fa-2x text-danger mb-2"></i>
+                                            <h6 class="bold mayus">Acta: #<?= $acta['id_acta'] ?></h6>
+                                            <p class="mb-1"><strong>Fecha:</strong> <?= date('d-m-Y', strtotime($acta['fecha_revision'])) ?></p>
+                                            <p class="mb-0"><strong>Descripción:</strong> </p>
+                                            <?php
+                                                $resultadoLinea = strtok($acta['resultado_revision'], "\n");
+                                                $conclusionLinea = strtok($acta['conclusion_revision'], "\n");
+                                                if (strlen($resultadoLinea) > 80) {
+                                                    $resultadoLinea = substr($resultadoLinea, 0, 80) . '...';
+                                                }
+                                                if (strlen($conclusionLinea) > 80) {
+                                                    $conclusionLinea = substr($conclusionLinea, 0, 80) . '...';
+                                                }
+                                            ?>
+                                            <p class="text-muted small mb-1"> <i class="fa fa-stethoscope"></i> <?= htmlspecialchars($resultadoLinea) ?> </p>
+                                            <p class="text-muted small mb-0"> <i class="fa fa-lightbulb"></i> <?= htmlspecialchars($conclusionLinea) ?> </p>
+                                        </div>
+                                        <div class="mt-2"> <button class="btn btn-infor btn-sm" title="VER ACTA DE REVISIÓN" onclick="window.open('../includes/_acta_revision/Acta de Revision.php?id_acta=<?php echo $acta['id_acta']; ?>')"> <i class="fa fa-eye"></i> Ver PDF </button> </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    <?php endwhile; ?>
-                </div>
-            <?php else: ?>
-                <p class="text-muted mb-0">No hay actas de revisión registradas para este equipo.</p>
-            <?php endif; ?>
+                            </div> <?php endwhile; ?> </div> <?php else: ?> <p class="text-muted mb-0">No hay actas de revisión registradas para este equipo.</p> <?php endif; ?>
+            </div>
         </div>
     </div>
 
 
+    <!-- Historial de Cambios con Sección Colapsable -->
+    <div class="card card-section shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="font-primary mb-0">
+                <i class="fa fa-history"></i> Historial de Cambios
+            </h6>
+            <button class="btn btn-sm btn-outline-primary"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#historialCollapse"
+                aria-expanded="false"
+                aria-controls="historialCollapse">
+                <i class="fa fa-chevron-down"></i>
+            </button>
+        </div>
 
+        <div class="collapse" id="historialCollapse">
+            <div class="card-body">
+                <?php if ($historialResult && mysqli_num_rows($historialResult) > 0): ?>
+                    <ul class="timeline list-unstyled">
+                        <?php while ($h = mysqli_fetch_assoc($historialResult)): ?>
+                            <li class="mb-4">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-primary me-2"><i class="fa fa-clock"></i></span>
+                                    <div>
+                                        <strong class="text-primary"><?= htmlspecialchars($h['tipo_evento']) ?></strong>
+                                        <small class="text-muted d-block">
+                                            <?= date('d-m-Y h:i A', strtotime($h['fecha'])) ?>
+                                            | Por: <?= htmlspecialchars($h['nombre'] . ' ' . $h['apellido']) ?>
+                                        </small>
+
+                                        <?php if (!empty($h['notas'])): ?>
+                                            <p class="mt-2 mb-0">
+                                                <i class="fa fa-pen text-secondary"></i>
+                                                <?= nl2br(htmlspecialchars($h['notas'])) ?>
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </li>
+                        <?php endwhile; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-muted mb-0">No hay historial de cambios registrado para este equipo.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 
     <!-- Registro y Modificación Compacto -->
     <div class="card card-section shadow-sm">
@@ -256,6 +388,40 @@ $apellidoEncMod = $fEncMod['apellido'] ?? "";
             </dl>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const btnActas = document.querySelector('[data-bs-target="#actasCollapse"]');
+            const iconActas = btnActas.querySelector("i");
+
+            document.getElementById("actasCollapse").addEventListener("show.bs.collapse", () => {
+                iconActas.classList.remove("fa-chevron-down");
+                iconActas.classList.add("fa-chevron-up");
+            });
+
+            document.getElementById("actasCollapse").addEventListener("hide.bs.collapse", () => {
+                iconActas.classList.remove("fa-chevron-up");
+                iconActas.classList.add("fa-chevron-down");
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const btn = document.querySelector('[data-bs-target="#historialCollapse"]');
+            const icon = btn.querySelector("i");
+
+            document.getElementById("historialCollapse").addEventListener("show.bs.collapse", () => {
+                icon.classList.remove("fa-chevron-down");
+                icon.classList.add("fa-chevron-up");
+            });
+
+            document.getElementById("historialCollapse").addEventListener("hide.bs.collapse", () => {
+                icon.classList.remove("fa-chevron-up");
+                icon.classList.add("fa-chevron-down");
+            });
+        });
+    </script>
+
+
 
 
 </div>

@@ -34,10 +34,10 @@ $output['recordsFiltered'] = $totalRecords;
 
 // Columnas para ordenar
 $columns = [
-    "CAST(SUBSTRING_INDEX(e.codigo_bienes, '-', -1) AS UNSIGNED)", 
-    "u.nombre_unidad", 
-    "usuario_responsable", 
-    "tipo_equipo", 
+    "CAST(SUBSTRING_INDEX(e.codigo_bienes, '-', -1) AS UNSIGNED)",
+    "u.nombre_unidad",
+    "usuario_responsable",
+    "tipo_equipo",
     "estado"
 ];
 
@@ -50,9 +50,16 @@ $orderClause = "$orderColumnName $orderDir";
 
 // Búsqueda
 $searchTerm = $_POST['search']['value'] ?? '';
-$query = "SELECT e.*, u.nombre_unidad
+/* $query = "SELECT e.*, u.nombre_unidad
           FROM equipos e
-          LEFT JOIN unidades u ON e.unidad_id = u.id";
+          LEFT JOIN unidades u ON e.unidad_id = u.id"; */
+
+// Cambia la consulta para incluir el JOIN con usuarios_responsables
+$query = "SELECT e.*, u.nombre_unidad, ur.nombre AS usuario_nombre, ur.apellido AS usuario_apellido
+          FROM equipos e
+          LEFT JOIN unidades u ON e.unidad_id = u.id
+          LEFT JOIN usuarios_responsables ur ON e.usuarioRes_id = ur.id"; // <- aquí agregamos el JOIN
+
 
 if (!empty($searchTerm)) {
     $searchTerm = mysqli_real_escape_string($conexion, $searchTerm);
@@ -86,7 +93,7 @@ if (!$result) {
 }
 
 $data = [];
-while ($row = mysqli_fetch_assoc($result)) {
+/* while ($row = mysqli_fetch_assoc($result)) {
 
     // Manejo de código de bienes
     $codigo_bienes = 'Sin Código';
@@ -132,7 +139,77 @@ while ($row = mysqli_fetch_assoc($result)) {
     $row['acciones'] = $acciones;
 
     $data[] = $row;
+} */
+
+while ($row = mysqli_fetch_assoc($result)) {
+
+    // Código de bienes
+    $codigo_bienes = 'Sin Código';
+    if (!empty($row['codigo_bienes'])) {
+        $partes = explode('-', $row['codigo_bienes']);
+        if (count($partes) > 1) {
+            $codigo_bienes = implode('-', array_slice($partes, -3));
+        } else {
+            $codigo_bienes = $row['codigo_bienes'];
+        }
+    }
+    $row['codigo_bienes'] = $codigo_bienes;
+
+    // Estado con badge según múltiples estados
+    $estado = $row['estado'] ?? 'N/T';
+    $estados = [
+        "Operativo" => "bg-verde text-white",
+        "En préstamo" => "bg-warning text-dark",
+        "Pendiente de revisión" => "bg-info text-dark",
+        "En reparación" => "bg-info text-dark",
+        "Dañado" => "bg-danger text-white",
+        "De baja" => "bg-secondary text-white",
+        "Disponible" => "bg-primary text-white",
+        "Inactivo" => "bg-dark text-white"
+    ];
+    $badgeClass = $estados[$estado] ?? 'bg-secondary text-white';
+    $row['estado'] = '<span class="badge ' . $badgeClass . ' rounded">' . $estado . '</span>';
+
+    // Nombre completo del responsable
+    $nombreUsuario = trim(($row['usuario_nombre'] ?? '') . ' ' . ($row['usuario_apellido'] ?? ''));
+    $row['usuario_responsable'] = !empty($nombreUsuario) ? $nombreUsuario : 'Sin información';
+
+    // Unidad
+    $row['nombre_unidad'] = $row['nombre_unidad'] ?? 'Sin información';
+
+    // Tipo de equipo
+    $row['tipo_equipo'] = $row['tipo_equipo'] ?? 'Sin información';
+    $row['marca'] = $row['marca'] ?? '';
+    $row['modelo'] = $row['modelo'] ?? '';
+
+    // Acciones según rol
+    $acciones = '';
+    if ($_SESSION['rol'] == 1) {
+        $acciones = '
+           <button type="button" class="btn btn-infor btn-sm btn-ver" 
+                    title="Ver Registro" 
+                    data-id="' . $row["id"] . '">
+                <i class="fa fa-eye"></i>
+            </button>
+
+            <a href="../includes/_equipos/editar_equipo.php?id=' . $row['id'] . '" class="btn btn-edit btn-sm" title="Editar Registro">
+                <i class="fa fa-edit "></i>
+            </a>
+            
+            <a href="../includes/_equipos/eliminar_equipo.php?id=' . $row['id'] . '" 
+            data-nombre="' . $row['tipo_equipo'] . '" 
+            data-apellido="' . $row['nombre_unidad'] . '" 
+            class="btn btn-delete btn-del btn-sm" title="Eliminar Registro">
+                <i class="fa fa-trash "></i>
+             </a>
+        ';
+    }
+    $row['acciones'] = $acciones;
+
+    $data[] = $row;
 }
+
+
 
 $output['data'] = $data;
 echo json_encode($output);

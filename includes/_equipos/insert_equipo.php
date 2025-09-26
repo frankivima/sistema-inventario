@@ -21,11 +21,10 @@ if (isset($_SESSION['user_id'])) {
 <div class="modal fade" id="insert_equipo" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-gradient text-white d-flex align-items-center justify-content-between">
                 <h3 class="modal-title mayus bold" id="exampleModalLabel">Agregar Equipo</h3>
-                <button type="button" class="btn btn-light" data-dismiss="modal">
-                    <i class="fa fa-times" aria-hidden="true"></i>
-                </button>
+                
+                <button type="button" class="btn-close btn-close-white" data-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
             <div class="modal-body">
@@ -39,25 +38,55 @@ if (isset($_SESSION['user_id'])) {
                             <div class="form-row mb-0 mt-2">
 
                                 <div class="form-group col">
-                                    <label for="unidad_id" class="label-span mayus">Unidad de Trabajo: </label>
-                                    <select class="form-select" id="unidad_id" name="unidad_id" required>
-                                        <option value="">--Selecciona la Unidad--</option>
+                                    <!-- Select Unidad -->
+                                    <label for="unidad_id" class="label-span mayus">Unidad</label>
+                                    <select id="unidad_id" name="unidad_id" class="form-select">
+                                        <option value="">Seleccione una unidad</option>
                                         <?php
-                                        include("../db.php");
-                                        $sql = "SELECT * FROM unidades ORDER BY nombre_unidad ASC";
-                                        $resultado = mysqli_query($conexion, $sql);
-                                        while ($consulta = mysqli_fetch_array($resultado)) {
-                                            echo '<option value="' . $consulta['id'] . '">' . $consulta['nombre_unidad'] . '</option>';
+                                        $unidades = mysqli_query($conexion, "SELECT * FROM unidades ORDER BY nombre_unidad ASC");
+                                        while ($u = mysqli_fetch_assoc($unidades)) {
+                                            echo "<option value='{$u['id']}'>{$u['nombre_unidad']}</option>";
                                         }
                                         ?>
                                     </select>
-
                                 </div>
 
                                 <div class="form-group col">
-                                    <label for="usuario_responsable" class="label-span mayus">Usuario Responsable:</label>
-                                    <input type="text" id="usuario_responsable" name="usuario_responsable" class="form-control" required>
+                                    <!-- Select Usuario Responsable -->
+                                    <label for="usuarioRes_id" class="label-span mayus">Usuario Responsable</label>
+                                    <select id="usuarioRes_id" name="usuarioRes_id" class="form-select" disabled>
+                                        <option value="">Seleccione primero la unidad</option>
+                                    </select>
                                 </div>
+
+                                <script>
+                                    document.getElementById('unidad_id').addEventListener('change', function() {
+                                        const unidadId = this.value;
+                                        const usuarioSelect = document.getElementById('usuarioRes_id');
+
+                                        if (unidadId === "") {
+                                            usuarioSelect.innerHTML = '<option value="">Seleccione primero la unidad</option>';
+                                            usuarioSelect.disabled = true;
+                                            return;
+                                        }
+
+                                        // Petición AJAX para obtener usuarios de la unidad seleccionada
+                                        fetch(`../includes/_usuariosRes/usuarios_unidad.php?unidad_id=${unidadId}`)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                usuarioSelect.innerHTML = '<option value="">Seleccione un usuario</option>';
+                                                data.forEach(user => {
+                                                    usuarioSelect.innerHTML += `<option value="${user.id}">${user.nombre} ${user.apellido}</option>`;
+                                                });
+                                                usuarioSelect.disabled = false;
+                                            })
+                                            .catch(err => {
+                                                usuarioSelect.innerHTML = '<option value="">Error cargando usuarios</option>';
+                                                console.error(err);
+                                            });
+                                    });
+                                </script>
+
 
                             </div>
 
@@ -82,6 +111,88 @@ if (isset($_SESSION['user_id'])) {
                                         <label for="floatingTextarea2">Observaciones del Equipo</label>
                                     </div>
                                 </div>
+
+                            </div>
+
+                            <hr>
+
+                            <div class="form-row mb-0 mt-3">
+
+                                <div class="form-group col">
+                                    <label for="estado" class="label-span mayus">Estado del Equipo</label>
+                                    <select name="estado" id="estado" class="form-select">
+                                        <option value="Operativo" title="El equipo está en uso normal.">✅ Operativo</option>
+                                        <option value="En préstamo" title="El equipo está temporalmente asignado a otro departamento/persona.">🟡 En préstamo</option>
+                                        <option value="Pendiente de revisión" title="El equipo necesita ser revisado antes de saber si funciona.">🔧 Pendiente de revisión</option>
+                                        <option value="En reparación" title="El equipo está siendo reparado activamente.">🔧 En reparación</option>
+                                        <option value="Dañado" title="El equipo fue revisado y está dañado, no puede usarse.">❌ Dañado</option>
+                                        <option value="De baja" title="El equipo fue dado de baja formalmente (por deterioro o descarte).">🗑️ De baja</option>
+                                        <option value="Disponible" title="Está en stock, sin responsable asignado, pero operativo.">🟦 Disponible</option>
+                                        <option value="Inactivo" title="Está guardado sin uso, pero no está dañado ni dado de baja.">⚫ Inactivo</option>
+                                    </select>
+                                </div>
+
+                            </div>
+
+                            <!-- Campos extra para préstamo -->
+                            <div id="prestamoFields" style="display:none;">
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label for="prestamo_unidad" class="label-span mayus">Unidad Destino</label>
+                                        <select id="prestamo_unidad" name="prestamo_unidad" class="form-select">
+                                            <option value="">Seleccione una unidad</option>
+                                            <?php
+                                            $unidades = mysqli_query($conexion, "SELECT * FROM unidades ORDER BY nombre_unidad ASC");
+                                            while ($u = mysqli_fetch_assoc($unidades)) {
+                                                echo "<option value='{$u['id']}'>{$u['nombre_unidad']}</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group col-md-6">
+                                        <label for="prestamo_usuario" class="label-span mayus">Usuario Responsable</label>
+                                        <select id="prestamo_usuario" name="prestamo_usuario" class="form-select" disabled>
+                                            <option value="">Seleccione primero la unidad</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+
+
+                                <script>
+                                    // Mostrar campos de préstamo solo si el estado es "En préstamo"
+                                    document.getElementById('estado').addEventListener('change', function() {
+                                        document.getElementById('prestamoFields').style.display = (this.value === 'En préstamo') ? 'block' : 'none';
+                                    });
+
+                                    // Filtrado dependiente: usuarios según unidad seleccionada
+                                    document.getElementById('prestamo_unidad').addEventListener('change', function() {
+                                        const unidadId = this.value;
+                                        const usuarioSelect = document.getElementById('prestamo_usuario');
+
+                                        if (unidadId === "") {
+                                            usuarioSelect.innerHTML = '<option value="">Seleccione primero la unidad</option>';
+                                            usuarioSelect.disabled = true;
+                                            return;
+                                        }
+
+                                        fetch(`../includes/_usuariosRes/usuarios_unidad.php?unidad_id=${unidadId}`)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                usuarioSelect.innerHTML = '<option value="">Seleccione un usuario</option>';
+                                                data.forEach(user => {
+                                                    usuarioSelect.innerHTML += `<option value="${user.id}">${user.nombre} ${user.apellido}</option>`;
+                                                });
+                                                usuarioSelect.disabled = false;
+                                            })
+                                            .catch(err => {
+                                                usuarioSelect.innerHTML = '<option value="">Error cargando usuarios</option>';
+                                                console.error(err);
+                                            });
+                                    });
+                                </script>
+
 
                             </div>
 
@@ -235,16 +346,14 @@ if (isset($_SESSION['user_id'])) {
                     <input type="hidden" id="encargado_registro" name="encargado_registro" value="<?php echo $idUsuario; ?>">
 
 
-                    <input type="hidden" name="estado" value="Activo">
+                    <!-- <input type="hidden" name="estado" value="Activo"> -->
                     <input type="hidden" name="accion" value="insert_equipo">
 
                     <div class="modal-footer d-flex justify-content-center">
 
-                        <button type="button" onclick="validarFormulario()" id="register" name="registrar" class="btn btn-agg mayus mr-2">Agregar Equipo</button>
-
-                        <a href="equipos.php" class="btn btn-delete mayus ml-2">Cancelar</a>
-
-
+                        <!-- <a href="equipos.php" class="btn btn-secondary mayus ml-2">Cancelar</a> -->
+                        <button type="button" class="btn btn-cancel-form mayus" data-dismiss="modal">Cancelar</button>
+                        <button type="button" onclick="validarFormulario()" id="register" name="registrar" class="btn btn-agg-form mayus">Agregar Equipo</button>
                     </div>
 
 
@@ -264,19 +373,27 @@ if (isset($_SESSION['user_id'])) {
 
                     <script>
                         function validarFormulario() {
-                            var departamento = document.getElementById("departamento").value;
-                            var usuarioResponsable = document.getElementById("usuario_responsable").value;
+                            var unidad_id = document.getElementById("unidad_id").value;
+                            // var usuarioResponsable = document.getElementById("usuario_responsable").value;
+                            var usuarioRes_id = document.getElementById("usuarioRes_id").value;
                             var tipoEquipo = document.getElementById("tipo_equipo").value;
 
                             // Verificar si alguno de los campos está vacío
-                            if (departamento.trim() === '') {
-                                // Mostrar mensaje de error para el campo Departamento
+                            if (unidad_id.trim() === '') {
+                                // Mostrar mensaje de error para el campo unidad_id
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Error',
-                                    text: 'El campo Departamento es obligatorio. Por favor, complételo.'
+                                    text: 'El campo Unidad es obligatorio. Por favor, complételo.'
                                 });
-                            } else if (usuarioResponsable.trim() === '') {
+                                /*  } else if (usuarioResponsable.trim() === '') {
+                                     // Mostrar mensaje de error para el campo Usuario Responsable
+                                     Swal.fire({
+                                         icon: 'error',
+                                         title: 'Error',
+                                         text: 'El campo Usuario Responsable es obligatorio. Por favor, complételo.'
+                                     }); */
+                            } else if (usuarioRes_id.trim() === '') {
                                 // Mostrar mensaje de error para el campo Usuario Responsable
                                 Swal.fire({
                                     icon: 'error',

@@ -55,74 +55,173 @@ if (isset($_SESSION['user_id'])) {
 
                             <div class="form-row mb-0 mt-2">
 
+                                <!-- Select Unidad -->
                                 <div class="form-group col">
-                                    <label for="departamento" class="label-span left mayus">Departamento:</label>
-                                    <select class="form-select" id="departamento" name="departamento" required>
-                                        <option value="">--Selecciona un departamento--</option>
+                                    <label for="unidad_id" class="label-span mayus">Unidad</label>
+                                    <select id="unidad_id" name="unidad_id" class="form-select">
+                                        <option value="">Seleccione una unidad</option>
                                         <?php
-                                        include("../db.php");
-
-                                        // Obtener el departamento actual del equipo
-                                        $departamento_actual = $usuario['departamento'];
-
-                                        // Consultar todos los departamentos disponibles
-                                        $sql = "SELECT * FROM departamentos ORDER BY nombre_departamento ASC";
-                                        $resultado = mysqli_query($conexion, $sql);
-
-                                        // Iterar sobre los resultados y crear las opciones del select
-                                        while ($consulta = mysqli_fetch_array($resultado)) {
-                                            // Marcar como seleccionado el departamento actual del equipo
-                                            $selected = ($departamento_actual == $consulta['nombre_departamento']) ? 'selected' : '';
-
-                                            // Imprimir la opción del departamento
-                                            echo '<option value="' . $consulta['nombre_departamento'] . '" ' . $selected . '>' . $consulta['nombre_departamento'] . '</option>';
+                                        $unidades = mysqli_query($conexion, "SELECT * FROM unidades ORDER BY nombre_unidad ASC");
+                                        while ($u = mysqli_fetch_assoc($unidades)) {
+                                            $selected = ($u['id'] == $usuario['unidad_id']) ? 'selected' : '';
+                                            echo "<option value='{$u['id']}' $selected>{$u['nombre_unidad']}</option>";
                                         }
                                         ?>
                                     </select>
                                 </div>
 
-
+                                <!-- Select Usuario Responsable -->
                                 <div class="form-group col">
-                                    <label for="usuario_responsable" class="label-span left mayus">Usuario Responsable:</label>
-                                    <input type="text" id="usuario_responsable" name="usuario_responsable" class="form-control" value="<?php echo $usuario['usuario_responsable']; ?>" required>
+                                    <label for="usuarioRes_id" class="label-span mayus">Usuario Responsable</label>
+                                    <select id="usuarioRes_id" name="usuarioRes_id" class="form-select">
+                                        <option value="">Seleccione primero la unidad</option>
+                                    </select>
                                 </div>
 
                             </div>
 
                             <hr>
 
-                            <div class="form-row mb-0 mt-2">
-
+                            <!-- Ubicación -->
+                            <div class="form-row mb-0 mt-3">
                                 <div class="form-group col">
                                     <div class="form-floating">
-                                        <textarea class="form-control" id="ubicacion" name="ubicacion"><?php echo $usuario['ubicacion']; ?></textarea>
-                                        <label for="floatingTextarea2" class="label-span">Ubicación Física del Equipo:</label>
+                                        <textarea class="form-control" id="ubicacion" name="ubicacion"><?= htmlspecialchars($usuario['ubicacion']) ?></textarea>
+                                        <label for="ubicacion">Ubicación Física del Equipo</label>
                                     </div>
                                 </div>
-
                             </div>
-                            <div class="form-row mb-0 mt-2">
 
+                            <!-- Observaciones -->
+                            <div class="form-row mb-0 mt-3">
                                 <div class="form-group col">
                                     <div class="form-floating">
-                                        <textarea class="form-control" id="observaciones" name="observaciones"><?php echo $usuario['observaciones']; ?></textarea>
-                                        <label for="floatingTextarea2" class="label-span">Observaciones del Equipo:</label>
+                                        <textarea class="form-control" id="observaciones" name="observaciones"><?= htmlspecialchars($usuario['observaciones']) ?></textarea>
+                                        <label for="observaciones">Observaciones del Equipo</label>
                                     </div>
                                 </div>
-
                             </div>
 
-                            <div class="form-row mb-0 mt-2">
-                                <div class="form-group col-6">
-                                    <label for="estado" class="form-label label-span left mayus">Estado:</label>
-                                    <select name="estado" id="estado" class="form-select" required>
-                                        <option value="">--Selecciona una opción--</option>
-                                        <option <?php echo $usuario['estado'] === 'Activo' ? "selected='selected' " : "" ?> value="Activo">Activo</option>
-                                        <option <?php echo $usuario['estado'] === 'Inactivo' ? "selected='selected' " : "" ?> value="Inactivo">Inactivo</option>
+                            <hr>
+
+                            <!-- Estado -->
+                            <div class="form-row mb-0 mt-3">
+                                <div class="form-group col">
+                                    <label for="estado" class="label-span mayus">Estado del Equipo</label>
+                                    <select name="estado" id="estado" class="form-select">
+                                        <?php
+                                        $estados = [
+                                            "Operativo" => "✅ Operativo",
+                                            "En préstamo" => "🟡 En préstamo",
+                                            "Pendiente de revisión" => "🔧 Pendiente de revisión",
+                                            "En reparación" => "🔧 En reparación",
+                                            "Dañado" => "❌ Dañado",
+                                            "De baja" => "🗑️ De baja",
+                                            "Disponible" => "🟦 Disponible",
+                                            "Inactivo" => "⚫ Inactivo"
+                                        ];
+                                        foreach ($estados as $val => $label) {
+                                            $selected = ($usuario['estado'] == $val) ? 'selected' : '';
+                                            echo "<option value='$val' $selected>$label</option>";
+                                        }
+                                        ?>
                                     </select>
                                 </div>
                             </div>
+
+                            <!-- Campos extra para préstamo -->
+                            <div id="prestamoFields" style="<?= ($usuario['estado'] == 'En préstamo') ? '' : 'display:none;' ?>">
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label for="prestamo_unidad" class="label-span mayus">Unidad Destino</label>
+                                        <select id="prestamo_unidad" name="prestamo_unidad" class="form-select">
+                                            <option value="">Seleccione una unidad</option>
+                                            <?php
+                                            $unidades = mysqli_query($conexion, "SELECT * FROM unidades ORDER BY nombre_unidad ASC");
+                                            while ($u = mysqli_fetch_assoc($unidades)) {
+                                                $selected = ($u['id'] == $usuario['prestamo_unidad']) ? 'selected' : '';
+                                                echo "<option value='{$u['id']}' $selected>{$u['nombre_unidad']}</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group col-md-6">
+                                        <label for="prestamo_usuario" class="label-span mayus">Usuario Responsable</label>
+                                        <select id="prestamo_usuario" name="prestamo_usuario" class="form-select">
+                                            <option value="">Seleccione primero la unidad</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
+
+                        <script>
+                            // Función para mostrar/ocultar campos de préstamo según el estado
+                            function togglePrestamoFields() {
+                                const estado = document.getElementById('estado').value;
+                                const prestamoFields = document.getElementById('prestamoFields');
+                                prestamoFields.style.display = (estado === 'En préstamo') ? 'block' : 'none';
+
+                                if (estado !== 'En préstamo') {
+                                    document.getElementById('prestamo_unidad').value = "";
+                                    const prestamoUsuarioSelect = document.getElementById('prestamo_usuario');
+                                    prestamoUsuarioSelect.innerHTML = '<option value="">Seleccione primero la unidad</option>';
+                                    prestamoUsuarioSelect.disabled = true;
+                                }
+                            }
+
+                            // Función para cargar usuarios dinámicamente según la unidad
+                            function cargarUsuarios(unidadId, selectUsuariosId, usuarioSeleccionado = "") {
+                                const selectUsuarios = document.getElementById(selectUsuariosId);
+
+                                if (!unidadId) {
+                                    selectUsuarios.innerHTML = '<option value="">Seleccione primero la unidad</option>';
+                                    selectUsuarios.disabled = true;
+                                    return;
+                                }
+
+                                fetch(`../_usuariosRes/usuarios_unidad.php?unidad_id=${unidadId}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        selectUsuarios.innerHTML = '<option value="">Seleccione un usuario</option>';
+                                        data.forEach(user => {
+                                            const option = document.createElement('option');
+                                            option.value = user.id;
+                                            option.textContent = `${user.nombre} ${user.apellido}`;
+                                            if (user.id == usuarioSeleccionado) option.selected = true;
+                                            selectUsuarios.appendChild(option);
+                                        });
+                                        selectUsuarios.disabled = false;
+                                    })
+                                    .catch(err => {
+                                        console.error('Error cargando usuarios:', err);
+                                        selectUsuarios.innerHTML = '<option value="">Error al cargar usuarios</option>';
+                                    });
+                            }
+
+                            window.addEventListener('DOMContentLoaded', () => {
+                                // Inicializar selects con valores de la BD
+                                cargarUsuarios("<?= $usuario['unidad_id'] ?>", "usuarioRes_id", "<?= $usuario['usuarioRes_id'] ?>");
+                                cargarUsuarios("<?= $usuario['prestamo_unidad'] ?>", "prestamo_usuario", "<?= $usuario['prestamo_usuario'] ?>");
+
+                                // Mostrar/ocultar campos de préstamo
+                                togglePrestamoFields();
+
+                                // Listeners dinámicos para actualizar select de usuarios al cambiar la unidad
+                                document.getElementById('unidad_id').addEventListener('change', function() {
+                                    cargarUsuarios(this.value, 'usuarioRes_id');
+                                });
+
+                                document.getElementById('prestamo_unidad').addEventListener('change', function() {
+                                    cargarUsuarios(this.value, 'prestamo_usuario');
+                                });
+
+                                // Listener para mostrar/ocultar campos de préstamo según el estado
+                                document.getElementById('estado').addEventListener('change', togglePrestamoFields);
+                            });
+                        </script>
 
 
 
@@ -160,13 +259,13 @@ if (isset($_SESSION['user_id'])) {
                                 <div class="form-row mb-0 mt-1">
                                     <div class="form-group col">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" id="marca" name="marca" value="<?php echo $usuario['marca']; ?>" required>
+                                            <input type="text" class="form-control" id="marca" name="marca" value="<?php echo $usuario['marca']; ?>">
                                             <label for="floatingInputGrid" class="label-span">Marca:</label>
                                         </div>
                                     </div>
                                     <div class="form-group col">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" id="modelo" name="modelo" value="<?php echo $usuario['modelo']; ?>" required>
+                                            <input type="text" class="form-control" id="modelo" name="modelo" value="<?php echo $usuario['modelo']; ?>">
                                             <label for="floatingInputGrid" class="label-span">Modelo:</label>
                                         </div>
                                     </div>
@@ -178,7 +277,7 @@ if (isset($_SESSION['user_id'])) {
 
                                     <div class="form-group col">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" id="serial" name="serial" value="<?php echo $usuario['serial']; ?>" required>
+                                            <input type="text" class="form-control" id="serial" name="serial" value="<?php echo $usuario['serial']; ?>">
                                             <label for="floatingInputGrid" class="label-span">Serial:</label>
                                         </div>
                                     </div>
@@ -284,12 +383,11 @@ if (isset($_SESSION['user_id'])) {
                         <div class="card-footer">
 
                             <div class="my-2 d-flex justify-content-center">
-                                <button type="submit" id="form" name="form" class="btn btn-agg mr-2 mayus bold">
-                                    <i class="fa-regular fa-floppy-disk"></i> Guardar Cambios</button>
-
-                                <a href="../../views/equipos.php" class="btn btn-delete ml-2 mayus bold">
-                                    <i class="fa-solid fa-x"></i> Cancelar
+                                <a href="../../views/equipos.php" class="btn btn-cancel-form mr-2 mayus bold">
+                                    Cancelar
                                 </a>
+                                <button type="submit" id="form" name="form" class="btn btn-agg-form ml-2 mayus bold">
+                                    Guardar Cambios</button>
                             </div>
                         </div>
                     </div>

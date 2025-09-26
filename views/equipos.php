@@ -30,11 +30,11 @@ if ($varsesion == null || $varsesion = '') {
                         if ($_SESSION['rol'] == 1) {
                         ?>
 
-                            <button type="button" class="btn btn-agg btn-md bold mayus" title="Insertar Nuevo Equipo al Inventario" data-toggle="modal" data-target="#insert_equipo">
+                            <button type="button" class="btn btn-agg-form btn-md bold mayus" title="Insertar Nuevo Equipo al Inventario" data-toggle="modal" data-target="#insert_equipo">
                                 <i class="fa fa-plus bold"></i> Agregar Equipo
                             </button>
 
-                            <a href="../views/generar_reportes_inventario.php" class="btn btn-infor mayus" title="Generar Reportes">
+                            <a href="../views/generar_reportes_inventario.php" class="btn btn-infor-form mayus" title="Generar Reportes">
                                 <i class="fa-solid fa-print "></i> Generar Reportes en PDF
                             </a>
 

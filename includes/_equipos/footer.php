@@ -18,6 +18,12 @@ if ($varsesion == null || $varsesion = '') {
 </footer>
 <!-- End of Footer -->
 
+<!-- jQuery (importante que sea antes de Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- JS Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <!-- SweetAlert2 -->
 <script src="../../vendor/SweetAlert2/js/sweetalert2.all.min.js"></script>
 

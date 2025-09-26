@@ -46,7 +46,77 @@ if ($actualsesion == null || $actualsesion == '') {
         .dataTables_length {
             display: none;
         }
+
+        /* Gradiente + animación del botón */
+        .btn-gradient {
+            background: linear-gradient(135deg, #034D81, #38948f);
+            background-size: 400% 400%;
+            animation: gradientBG 8s ease infinite;
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease-in-out, box-shadow 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Tooltip animado */
+        .tooltip {
+            opacity: 0 !important;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .tooltip.show {
+            opacity: 1 !important;
+            transform: translateY(0);
+        }
     </style>
+
+
+
+
+    <script>
+        $(document).ready(function() {
+            // Inicializar tooltip
+            $('[data-toggle="tooltip"]').tooltip();
+
+            // Abrir modal al hacer click
+            $('#btnRegistrarCambio').click(function() {
+                $('#modalCambioManual').modal('show');
+            });
+
+            // Atajo de teclado (opcional)
+            $(document).keydown(function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'm') {
+                    $('#modalCambioManual').modal('show');
+                }
+            });
+        });
+    </script>
 
 </head>
 
@@ -208,6 +278,18 @@ if ($actualsesion == null || $actualsesion == '') {
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 
+                        <!-- Botón dinámico para registrar cambio -->
+                        <!-- Botón flotante -->
+                        <li class="nav-item d-flex align-items-center mr-3">
+                            <button class="btn btn-gradient btn-circle" id="btnRegistrarCambio"
+                                data-toggle="tooltip" data-placement="bottom" title="Registrar cambio"
+                                data-target="#modalCambioManual">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </li>
+
+
+
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
@@ -220,7 +302,6 @@ if ($actualsesion == null || $actualsesion == '') {
                                     <?php echo $_SESSION['username']; ?></span>
 
                             </a>
-
 
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right text-light shadow" aria-labelledby="userDropdown">
@@ -236,11 +317,16 @@ if ($actualsesion == null || $actualsesion == '') {
                     </ul>
 
                 </nav>
+
+
                 <!-- End of Topbar -->
                 <?php  //endwhile;
                 ?>
 
                 <?php include "salir.php"; ?>
+
+                <?php include "../includes/_equipos/modal_cambioManual.php"; ?>
+
 
 
 

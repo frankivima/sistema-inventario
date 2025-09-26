@@ -221,6 +221,7 @@ if (isset($_SESSION['nombre']) && isset($_SESSION['apellido'])) {
 
 </div>
 
+
 <!-- End of Content Wrapper -->
 
 </div>

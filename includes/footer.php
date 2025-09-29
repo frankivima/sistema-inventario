@@ -7,7 +7,7 @@ if ($varsesion == null || $varsesion = '') {
     header("Location: _sesion/login.php");
 }
 
-?> 
+?>
 <!-- Footer -->
 <footer class="sticky-footer bg-white">
     <div class="container my-auto">
@@ -18,7 +18,7 @@ if ($varsesion == null || $varsesion = '') {
 </footer>
 <!-- End of Footer -->
 
-<!-- SweetAlert2 --> 
+<!-- SweetAlert2 -->
 <script src="../vendor/SweetAlert2/js/sweetalert2.all.min.js"></script>
 
 <!-- Bootstrap core JavaScript-->

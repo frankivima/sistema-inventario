@@ -3,6 +3,13 @@
   color: #ffffff;
 }
 
+/* HEADER*/
+
+.dataTables_length {
+  display: none !important;
+}
+
+
 /*Tipografia */
 
 .font-primary {
@@ -305,7 +312,7 @@
 
 /*Sidebar - Barra Lateral  */
 
-.navbar-nav {
+/* .navbar-nav {
   display: flex;
   flex-direction: column;
   padding-left: 0;
@@ -335,7 +342,7 @@
   padding-right: 0;
   padding-left: 0;
   color: #ffffff !important;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .navbar-nav .nav-link:hover {
@@ -403,7 +410,162 @@ a:not([href]):not([class]) {
 a:not([href]):not([class]):hover {
   color: inherit;
   text-decoration: none;
+} */
+
+
+/* Sidebar - Barra Lateral */
+.navbar-nav {
+  display: flex;
+  flex-direction: column;
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
 }
+
+.custom-navbar {
+  background: #034d81; /* Mismo color del sistema */
+}
+
+.navbar-nav .nav-item {
+  padding: 0;
+  transition: background-color 0.3s ease;
+}
+
+.navbar-nav .nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* hover sutil */
+  border-radius: 8px;
+}
+
+.navbar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.75rem 1rem;
+  color: #ffffff !important;
+  font-size: 15px;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffffff !important;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.navbar-nav .nav-item.active .nav-link {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-left: 4px solid #ffffff;
+  font-weight: 600;
+  border-radius: 0 8px 8px 0;
+}
+
+.navbar-nav .dropdown-menu {
+  position: static;
+  float: none;
+}
+
+.sidebar {
+  width: 220px; /* Sidebar más ancho y cómodo */
+  min-height: 100vh;
+}
+
+.sidebar #sidebarToggle {
+  width: 2.5rem;
+  height: 2.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.sidebar #sidebarToggle::after {
+  font-weight: 900;
+  content: "\f104";
+  font-family: "Font Awesome 5 Free";
+  margin-right: 0.1rem;
+}
+
+.sidebar hr.sidebar-divider {
+  margin: 0.5rem 1rem;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .sidebar-heading {
+  text-align: left;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+/* === Personalización de submenús (colapsos) === */
+.custom-collapse-inner {
+  background-color: rgba(255, 255, 255, 0.05); /* Sutil y acorde al sidebar */
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 0;
+}
+
+.custom-collapse-inner .collapse-header {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.7rem;
+  padding: 0.5rem 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.custom-collapse-inner .collapse-item {
+  display: block;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  transition: background 0.2s ease, padding-left 0.2s ease;
+  text-decoration: none; /* quita la línea debajo del texto */
+}
+
+.custom-collapse-inner .collapse-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  padding-left: 1.6rem;
+  text-decoration: none;
+}
+
+
+.custom-collapse-inner .collapse-item.active {
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.15);
+  border-left: 3px solid #fff;
+  border-radius: 0 8px 8px 0;
+}
+
+/* Minimalista para submenús */
+.custom-collapse-inner .collapse-item::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 10px;
+    background-color: #fff; /* color del punto, puede ser otro acento */
+    border-radius: 50%; /* hace que sea redondo */
+    vertical-align: middle;
+}
+
+
+
+/* Links generales */
+a {
+  color: inherit;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+
+
+
+
 
 /* Footer */
 footer.sticky-footer {

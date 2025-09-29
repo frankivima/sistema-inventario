@@ -1,3 +1,53 @@
+<style>
+  /* Gradiente + animación del botón */
+  .btn-gradient {
+    background: linear-gradient(135deg, #034d81, #38948f);
+    background-size: 400% 400%;
+    animation: gradientBG 8s ease infinite;
+    border: none;
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease-in-out, box-shadow 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  @keyframes gradientBG {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Tooltip animado */
+  .tooltip {
+    opacity: 0 !important;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .tooltip.show {
+    opacity: 1 !important;
+    transform: translateY(0);
+  }
+</style>
+
 <div class="modal fade" id="modalCambioManual" tabindex="-1" role="dialog" aria-labelledby="modalCambioManualLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -5,9 +55,9 @@
       <div class="modal-header bg-gradient text-white d-flex align-items-center justify-content-between">
         <h5 class="modal-title mayus" id="modalCambioManualLabel">Registrar cambios</h5>
         <!-- Icono de instrucciones con popover -->
-        <button type="button" class="btn btn-outline-light btn-sm ms-2" 
-                data-bs-toggle="popover" data-bs-html="true" data-bs-placement="bottom"
-                data-bs-content='
+        <button type="button" class="btn btn-outline-light btn-sm ms-2"
+          data-bs-toggle="popover" data-bs-html="true" data-bs-placement="bottom"
+          data-bs-content='
                 <ul class="mb-0">
                   <li>No se permiten cambios de <strong>estado</strong> ni <strong>préstamos/asignaciones</strong>.</li>
                   <li>Acciones de <strong>Hardware</strong> y <strong>Software</strong> solo si <strong>no modifican directamente la tabla equipos</strong>.</li>
@@ -24,14 +74,14 @@
         <form id="formCambioManual">
           <div class="form-group">
             <label for="equipo_id" class="label-span">Equipo:</label>
-            <select class="form-control" id="equipo_id" name="equipo_id" required style="width: 100%;" 
-                    title="Selecciona el equipo al que se aplicará el cambio.">
+            <select class="form-control" id="equipo_id" name="equipo_id" required style="width: 100%;"
+              title="Selecciona el equipo al que se aplicará el cambio.">
               <option value="">Selecciona un equipo...</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="tipo_evento" class="label-span">Tipo de evento: 
+            <label for="tipo_evento" class="label-span">Tipo de evento:
               <span data-bs-toggle="tooltip" title="Selecciona la categoría del cambio. Solo se permiten acciones que no modifiquen directamente el equipo como estado o préstamos.">
                 <i class="bi bi-info-circle"></i>
               </span>
@@ -72,7 +122,7 @@
   // Inicializar popovers
   document.addEventListener("DOMContentLoaded", function() {
     const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-    const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+    const popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
       return new bootstrap.Popover(popoverTriggerEl)
     })
   });
@@ -83,120 +133,116 @@
 <!-- jQuery -->
 <script src="../vendor/JQuery/jquery-3.7.1.min.js"></script>
 
-<script src="../vendor/Select2/select2.min.css"></script>
+<!-- Select2 -->
+<link rel="stylesheet" href="../vendor/Select2/select2.min.css">
 <script src="../vendor/Select2/select2.min.js"></script>
 
-<!-- Select2 -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-
 <script>
-    $(document).ready(function() {
-        // console.log("DOM listo");
+  $(document).ready(function() {
+    // console.log("DOM listo");
 
-        // Inicializar tooltip
-        $('[data-toggle="tooltip"]').tooltip();
-        // console.log("Tooltip inicializado");
+    // Inicializar tooltip
+    $('[data-toggle="tooltip"]').tooltip();
+    // console.log("Tooltip inicializado");
 
-        // Abrir modal
-        $('#btnRegistrarCambio').click(function() {
-            // console.log("Botón de registro clickeado");
-        });
-
-        // Inicializar Select2 en el modal
-        $('#modalCambioManual').on('shown.bs.modal', function() {
-            // console.log("Modal abierto");
-
-            if (!$('#equipo_id').hasClass("select2-hidden-accessible")) {
-                // console.log("Inicializando Select2");
-
-                $('#equipo_id').select2({
-                    placeholder: "Selecciona un equipo...",
-                    allowClear: true,
-                    ajax: {
-                        url: '../includes/_equipos/get_equipos.php',
-                        dataType: 'json',
-                        delay: 250,
-                        data: function(params) {
-                            // console.log("Buscando:", params.term);
-                            return {
-                                q: params.term
-                            };
-                        },
-                        processResults: function(data) {
-                            // console.log("Resultados:", data);
-                            return {
-                                results: data
-                            };
-                        },
-                        error: function(xhr, status, error) {
-                            console.error("Error AJAX Select2:", status, error);
-                            alert("Ocurrió un error al buscar equipos");
-                        },
-                        cache: true
-                    },
-                    minimumInputLength: 1,
-                    dropdownParent: $('#modalCambioManual')
-                });
-            }
-        });
+    // Abrir modal
+    $('#btnRegistrarCambio').click(function() {
+      // console.log("Botón de registro clickeado");
     });
+
+    // Inicializar Select2 en el modal
+    $('#modalCambioManual').on('shown.bs.modal', function() {
+      // console.log("Modal abierto");
+
+      if (!$('#equipo_id').hasClass("select2-hidden-accessible")) {
+        // console.log("Inicializando Select2");
+
+        $('#equipo_id').select2({
+          placeholder: "Selecciona un equipo...",
+          allowClear: true,
+          ajax: {
+            url: '../includes/_equipos/get_equipos.php',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+              // console.log("Buscando:", params.term);
+              return {
+                q: params.term
+              };
+            },
+            processResults: function(data) {
+              // console.log("Resultados:", data);
+              return {
+                results: data
+              };
+            },
+            error: function(xhr, status, error) {
+              console.error("Error AJAX Select2:", status, error);
+              alert("Ocurrió un error al buscar equipos");
+            },
+            cache: true
+          },
+          minimumInputLength: 1,
+          dropdownParent: $('#modalCambioManual')
+        });
+      }
+    });
+  });
 </script>
 
 
 <script>
-    $(document).ready(function() {
+  $(document).ready(function() {
 
-        $('#formCambioManual').submit(function(e) {
-            e.preventDefault(); // Evita que recargue la página
-            let formData = $(this).serialize();
+    $('#formCambioManual').submit(function(e) {
+      e.preventDefault(); // Evita que recargue la página
+      let formData = $(this).serialize();
 
-            $.ajax({
-                url: '../includes/_equipos/save_cambioManual.php', // archivo PHP que guarda los datos
-                type: 'POST',
-                data: formData,
-                dataType: 'json',
-                beforeSend: function() {
-                    // Opcional: deshabilitar botones para evitar doble submit
-                    $('#formCambioManual button[type="submit"]').prop('disabled', true);
-                },
-                success: function(response) {
-                    $('#formCambioManual button[type="submit"]').prop('disabled', false);
+      $.ajax({
+        url: '../includes/_equipos/save_cambioManual.php', // archivo PHP que guarda los datos
+        type: 'POST',
+        data: formData,
+        dataType: 'json',
+        beforeSend: function() {
+          // Opcional: deshabilitar botones para evitar doble submit
+          $('#formCambioManual button[type="submit"]').prop('disabled', true);
+        },
+        success: function(response) {
+          $('#formCambioManual button[type="submit"]').prop('disabled', false);
 
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: '¡Éxito!',
-                            text: response.mensaje,
-                            confirmButtonText: 'Aceptar',
-                            confirmButtonColor: '#034D81'
-                        }).then(() => {
-                            $('#modalCambioManual').modal('hide');
-                            $('#formCambioManual')[0].reset();
-                            $('#equipo_id').val(null).trigger('change'); // limpiar Select2
+          if (response.success) {
+            Swal.fire({
+              icon: 'success',
+              title: '¡Éxito!',
+              text: response.mensaje,
+              confirmButtonText: 'Aceptar',
+              confirmButtonColor: '#034D81'
+            }).then(() => {
+              $('#modalCambioManual').modal('hide');
+              $('#formCambioManual')[0].reset();
+              $('#equipo_id').val(null).trigger('change'); // limpiar Select2
 
-                            // 🔹 Recargar la página después de guardar
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.mensaje || 'Ocurrió un error al guardar'
-                        });
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $('#formCambioManual button[type="submit"]').prop('disabled', false);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Error en la comunicación con el servidor: ' + error
-                    });
-                }
+              // 🔹 Recargar la página después de guardar
+              location.reload();
             });
-        });
-
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: response.mensaje || 'Ocurrió un error al guardar'
+            });
+          }
+        },
+        error: function(xhr, status, error) {
+          $('#formCambioManual button[type="submit"]').prop('disabled', false);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error en la comunicación con el servidor: ' + error
+          });
+        }
+      });
     });
+
+  });
 </script>

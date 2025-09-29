@@ -6,7 +6,10 @@ $actualsesion = $_SESSION['username'];
 if ($actualsesion == null || $actualsesion == '') {
     header("Location: ./_sesion/login.php");
 }
+
+$current = basename($_SERVER['PHP_SELF']);
 ?>
+
 
 
 <!DOCTYPE html>
@@ -20,7 +23,7 @@ if ($actualsesion == null || $actualsesion == '') {
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Sistema Gestion de Inventario - FASGANZ</title>
+    <title>Sistema Gestión de IT - FASGANZ</title>
 
 
     <link rel="stylesheet" href="../css/style.css">
@@ -37,67 +40,9 @@ if ($actualsesion == null || $actualsesion == '') {
 
     <script src="../js/jquery.min.js"></script>
 
-
     <link rel="stylesheet" href="../vendor/bootstrap-5.3.2-dist/css/bootstrap.min.css">
 
     <link rel="icon" href="../assets/img/logo1.png" type="image/x-icon" />
-
-    <style>
-        .dataTables_length {
-            display: none;
-        }
-
-        /* Gradiente + animación del botón */
-        .btn-gradient {
-            background: linear-gradient(135deg, #034D81, #38948f);
-            background-size: 400% 400%;
-            animation: gradientBG 8s ease infinite;
-            border: none;
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s ease-in-out, box-shadow 0.3s ease;
-        }
-
-        .btn-gradient:hover {
-            transform: rotate(90deg) scale(1.1);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        @keyframes gradientBG {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        /* Tooltip animado */
-        .tooltip {
-            opacity: 0 !important;
-            transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .tooltip.show {
-            opacity: 1 !important;
-            transform: translateY(0);
-        }
-    </style>
-
-
-
 
     <script>
         $(document).ready(function() {
@@ -125,149 +70,114 @@ if ($actualsesion == null || $actualsesion == '') {
     <!-- Page Wrapper -->
     <div id="wrapper">
 
+
+
         <!-- Sidebar -->
         <ul class="navbar-nav custom-navbar sidebar accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
-                <div class="sidebar-brand-text mx-1 ">
+                <div class="sidebar-brand-text mx-1">
                     <img src="../assets/img/logo1.png" style="max-height: 80px; padding:10px;" alt="Logo Clinica">
                 </div>
             </a>
 
-            <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
+            <!-- INICIO -->
+            <li class="nav-item <?= ($current === 'index.php') ? 'active' : '' ?>">
                 <a class="nav-link" href="../views/index.php">
-                    <i class="fa-solid fa-home" aria-hidden="true"></i>
-                    <span>Inicio</span></a>
+                    <i class="fa-solid fa-home"></i>
+                    <span>Inicio</span>
+                </a>
             </li>
 
-            <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Interface
-            </div>
+            <div class="sidebar-heading">Interface</div>
 
+            <!-- ACTAS DE REVISIÓN (solo un link) -->
+            <li class="nav-item <?= ($current === 'acta_revision.php') ? 'active' : '' ?>">
+                <a class="nav-link" href="../views/acta_revision.php">
+                    <i class="fa-solid fa-file-circle-plus"></i>
+                    <span>Actas de Revisión</span>
+                </a>
+            </li>
 
-
-            <?php
-            // Verifica el rol del usuario
-            if ($_SESSION['rol'] == 1) {
-            ?>
-
-                <!-- Nav Item - Pages Collapse Menu -->
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities" aria-expanded="true" aria-controls="collapseUtilities">
-                        <i class="fa-solid fa-computer" aria-hidden="true"></i>
+            <!-- INVENTARIO DE EQUIPOS (solo un link) -->
+            <?php if ($_SESSION['rol'] == 1): ?>
+                <li class="nav-item <?= ($current === 'equipos.php') ? 'active' : '' ?>">
+                    <a class="nav-link" href="../views/equipos.php">
+                        <i class="fa-solid fa-computer"></i>
                         <span>Inventario de Equipos</span>
                     </a>
-                    <div id="collapseUtilities" class="collapse" aria-labelledby="collapseUtilities" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Mostrar</h6>
-                            <a class="collapse-item" href="../views/unidades.php">Unidades</a>
-                            <a class="collapse-item" href="../views/equipos.php">Equipos</a>
+                </li>
+            <?php endif; ?>
 
+            <!-- REDES (varios links → mantener collapse) -->
+            <li class="nav-item <?= $isRedes ? 'active' : '' ?>">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <span>Redes</span>
+                </a>
+                <div id="collapsePages" class="collapse <?= $isRedes ? 'show' : '' ?>" data-parent="#accordionSidebar">
+                    <div class="custom-collapse-inner py-2 rounded">
+                        <a class="collapse-item <?= ($current === 'acceso_routers.php') ? 'active' : '' ?>" href="../views/acceso_routers.php">Acceso a Routers</a>
+                        <a class="collapse-item <?= ($current === 'ip_fijas.php') ? 'active' : '' ?>" href="../views/ip_fijas.php">Asignación de IP</a>
+                        <a class="collapse-item <?= ($current === 'puntos_red.php') ? 'active' : '' ?>" href="../views/puntos_red.php">Puntos de Red</a>
+                    </div>
+                </div>
+            </li>
+
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">Otros</div>
+
+            <!-- CONFIGURACIÓN (solo rol 1) -->
+            <?php if ($_SESSION['rol'] == 1):
+                $isConfig = in_array($current, ['usuarios.php', 'unidades.php']);
+            ?>
+                <li class="nav-item <?= $isConfig ? 'active' : '' ?>">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseSettings" aria-expanded="false" aria-controls="collapseSettings">
+                        <i class="fa-solid fa-gears"></i>
+                        <span>Configuración</span>
+                    </a>
+                    <div id="collapseSettings" class="collapse" data-parent="#accordionSidebar">
+                        <div class="custom-collapse-inner py-2 rounded">
+                            <a class="collapse-item <?= ($current === 'usuarios.php') ? 'active' : '' ?>" href="../views/usuarios.php">
+                                Usuarios
+                            </a>
+                            <a class="collapse-item <?= ($current === 'unidades.php') ? 'active' : '' ?>" href="../views/unidades.php">
+                                Unidades
+                            </a>
                         </div>
                     </div>
                 </li>
+            <?php endif; ?>
 
-            <?php
-            };
-            ?>
-
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="true" aria-controls="collapsePages">
-                    <i class="fa-solid fa-network-wired" aria-hidden="true"></i>
-                    <span>Redes</span>
-                </a>
-                <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Mostrar</h6>
-                        <a class="collapse-item" href="../views/puntos_red.php">Puntos de Red</a>
-                        <a class="collapse-item" href="../views/ip_fijas.php">Asignación de IP Fijas</a>
-                        <a class="collapse-item" href="../views/acceso_routers.php">Acceso a Routers</a>
-
-                    </div>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pdf" aria-expanded="true" aria-controls="collapsePages">
-                    <i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i>
-                    <span>Acta de Revisión</span>
-                </a>
-                <div id="pdf" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Mostrar</h6>
-                        <a class="collapse-item" href="../views/acta_revision.php">Generar Reporte</a>
-
-                    </div>
-                </div>
-            </li>
-
-
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Otros
-            </div>
-
-            <?php
-            //};
-
-            ?>
-
-            <?php
-            // Verifica el rol del usuario
-            if ($_SESSION['rol'] == 1) {
-            ?>
-
-                <!-- Nav Item - user -->
-                <li class="nav-item">
-                    <a class="nav-link" href="../views/usuarios.php">
-                        <i class="fa fa-user" aria-hidden="true"></i>
-                        <span>Administrar Usuarios</span>
-                    </a>
-                </li>
-
-            <?php
-            };
-            ?>
-
-            <!-- Nav Item - infor -->
-            <li class="nav-item">
+            <!-- ACERCA DE -->
+            <li class="nav-item <?= ($current === 'acerca.php') ? 'active' : '' ?>">
                 <a class="nav-link" href="../views/acerca.php">
-                    <i class="fa fa-question-circle" aria-hidden="true"></i>
-                    <span>Acerca de</span></a>
+                    <i class="fa fa-question-circle"></i>
+                    <span>Acerca de</span>
+                </a>
             </li>
 
-
-
-            <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 
-            <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
 
-            <!-- Sidebar Message -->
-
-
         </ul>
         <!-- End of Sidebar -->
 
+
+
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
+
 
             <!-- Main Content -->
             <div id="content">
@@ -287,7 +197,6 @@ if ($actualsesion == null || $actualsesion == '') {
                                 <i class="fas fa-plus"></i>
                             </button>
                         </li>
-
 
 
                         <div class="topbar-divider d-none d-sm-block"></div>
@@ -327,6 +236,16 @@ if ($actualsesion == null || $actualsesion == '') {
 
                 <?php include "../includes/_equipos/modal_cambioManual.php"; ?>
 
+
+                <script>
+                    // Opcional: cerrar el collapse al seleccionar un link
+                    function closeSidebarCollapse(selector) {
+                        const collapse = document.querySelector(selector);
+                        if (collapse && collapse.classList.contains('show')) {
+                            $(collapse).collapse('hide');
+                        }
+                    }
+                </script>
 
 
 

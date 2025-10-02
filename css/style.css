@@ -38,6 +38,10 @@
   color: #004775 !important;
 }
 
+.font-infor {
+  color: #38948f !important;
+}
+
 .font-dark {
   color: #000000;
 }
@@ -66,6 +70,10 @@
 .mensaje-success {
   background-color: rgba(0, 0, 0, 0.062) !important;
   color: #007025 !important;
+}
+
+.bg-agg {
+  background-color: #034d81 !important;
 }
 
 .bg-delete {

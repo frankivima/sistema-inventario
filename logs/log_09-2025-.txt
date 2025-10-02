@@ -10,3 +10,5 @@ Backup creado: C:\xampp\htdocs\sistema-inventario\backups\backup_bd_inventario_v
 [14:46:59,60] Commit hecho con mensaje: Implementaci¢n completa del historial de cambios autom tico y manual con sus respectivos formularios, actualizaci¢n de la vista ver_equipos a un dise¤o m s moderno y detallado integrando las nuevas tablas, creaci¢n de la tabla usuarios_responsables vinculada a unidades para asignar responsables por unidad, integraci¢n de actas de revisi¢n y visualizaci¢n de historial en la vista de equipo, mejoras generales en dise¤o y estilos de botones y formularios, y actualizaci¢n del formulario de editar equipo para detectar y almacenar cambios autom ticamente en los registros. - Backup y cambios v2.0 - 09-2025- 
 [14:46:59,60] Push realizado 
 Backup creado: C:\xampp\htdocs\sistema-inventario\backups\backup_bd_inventario_v2.0_09-2025-.sql 
+[15:32:42,95] Commit hecho con mensaje: Mejorar sidebar, estilos y funcionamiento - Backup y cambios v2.0 - 09-2025- 
+[15:32:42,95] Push realizado 
